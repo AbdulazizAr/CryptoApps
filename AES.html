@@ -337,7 +337,7 @@
     <div class="container">
         <div class="header">
             <h1>AES-128 Encryption/Decryption Tool</h1>
-            <p>A simple yet powerful tool for AES-128 bit encryption with 128-bit key</p>
+            <p>A simple yet powerful tool for AES-128 bit encryption with 128-bit key Author: Abdulaziz Alrabeei (Spring 2025)</p>
         </div>
         
         <div class="input-section">
@@ -726,8 +726,8 @@
         </div>
     </div>
     <script>
-        //BLOCK1 
-        // AES-128 Encryption/Decryption Tool - JavaScript Implementation
+        //BLOCK1A 
+// AES-128 Encryption/Decryption Tool - Core Functions and Data Structures
 
 // Constants and lookup tables for AES operations
 const sBox = [
@@ -768,6 +768,7 @@ const invSBox = [
     0x17, 0x2b, 0x04, 0x7e, 0xba, 0x77, 0xd6, 0x26, 0xe1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0c, 0x7d
 ];
 
+// Round constants for key expansion
 const rCon = [
     [0x01, 0x00, 0x00, 0x00],
     [0x02, 0x00, 0x00, 0x00],
@@ -781,74 +782,53 @@ const rCon = [
     [0x36, 0x00, 0x00, 0x00]
 ];
 
-// Galois field multiplication tables for MixColumns
-const mul2 = [
-    0x00, 0x02, 0x04, 0x06, 0x08, 0x0a, 0x0c, 0x0e, 0x10, 0x12, 0x14, 0x16, 0x18, 0x1a, 0x1c, 0x1e,
-    0x20, 0x22, 0x24, 0x26, 0x28, 0x2a, 0x2c, 0x2e, 0x30, 0x32, 0x34, 0x36, 0x38, 0x3a, 0x3c, 0x3e,
-    0x40, 0x42, 0x44, 0x46, 0x48, 0x4a, 0x4c, 0x4e, 0x50, 0x52, 0x54, 0x56, 0x58, 0x5a, 0x5c, 0x5e,
-    0x60, 0x62, 0x64, 0x66, 0x68, 0x6a, 0x6c, 0x6e, 0x70, 0x72, 0x74, 0x76, 0x78, 0x7a, 0x7c, 0x7e,
-    0x80, 0x82, 0x84, 0x86, 0x88, 0x8a, 0x8c, 0x8e, 0x90, 0x92, 0x94, 0x96, 0x98, 0x9a, 0x9c, 0x9e,
-    0xa0, 0xa2, 0xa4, 0xa6, 0xa8, 0xaa, 0xac, 0xae, 0xb0, 0xb2, 0xb4, 0xb6, 0xb8, 0xba, 0xbc, 0xbe,
-    0xc0, 0xc2, 0xc4, 0xc6, 0xc8, 0xca, 0xcc, 0xce, 0xd0, 0xd2, 0xd4, 0xd6, 0xd8, 0xda, 0xdc, 0xde,
-    0xe0, 0xe2, 0xe4, 0xe6, 0xe8, 0xea, 0xec, 0xee, 0xf0, 0xf2, 0xf4, 0xf6, 0xf8, 0xfa, 0xfc, 0xfe,
-    0x1b, 0x19, 0x1f, 0x1d, 0x13, 0x11, 0x17, 0x15, 0x0b, 0x09, 0x0f, 0x0d, 0x03, 0x01, 0x07, 0x05,
-    0x3b, 0x39, 0x3f, 0x3d, 0x33, 0x31, 0x37, 0x35, 0x2b, 0x29, 0x2f, 0x2d, 0x23, 0x21, 0x27, 0x25,
-    0x5b, 0x59, 0x5f, 0x5d, 0x53, 0x51, 0x57, 0x55, 0x4b, 0x49, 0x4f, 0x4d, 0x43, 0x41, 0x47, 0x45,
-    0x7b, 0x79, 0x7f, 0x7d, 0x73, 0x71, 0x77, 0x75, 0x6b, 0x69, 0x6f, 0x6d, 0x63, 0x61, 0x67, 0x65,
-    0x9b, 0x99, 0x9f, 0x9d, 0x93, 0x91, 0x97, 0x95, 0x8b, 0x89, 0x8f, 0x8d, 0x83, 0x81, 0x87, 0x85,
-    0xbb, 0xb9, 0xbf, 0xbd, 0xb3, 0xb1, 0xb7, 0xb5, 0xab, 0xa9, 0xaf, 0xad, 0xa3, 0xa1, 0xa7, 0xa5,
-    0xdb, 0xd9, 0xdf, 0xdd, 0xd3, 0xd1, 0xd7, 0xd5, 0xcb, 0xc9, 0xcf, 0xcd, 0xc3, 0xc1, 0xc7, 0xc5,
-    0xfb, 0xf9, 0xff, 0xfd, 0xf3, 0xf1, 0xf7, 0xf5, 0xeb, 0xe9, 0xef, 0xed, 0xe3, 0xe1, 0xe7, 0xe5
-];
+// Galois field multiplication tables for Mix Columns operation
+const mul2 = new Array(256);
+const mul3 = new Array(256);
+const mul9 = new Array(256);
+const mul11 = new Array(256);
+const mul13 = new Array(256);
+const mul14 = new Array(256);
 
-const mul3 = [
-    0x00, 0x03, 0x06, 0x05, 0x0c, 0x0f, 0x0a, 0x09, 0x18, 0x1b, 0x1e, 0x1d, 0x14, 0x17, 0x12, 0x11,
-    0x30, 0x33, 0x36, 0x35, 0x3c, 0x3f, 0x3a, 0x39, 0x28, 0x2b, 0x2e, 0x2d, 0x24, 0x27, 0x22, 0x21,
-    0x60, 0x63, 0x66, 0x65, 0x6c, 0x6f, 0x6a, 0x69, 0x78, 0x7b, 0x7e, 0x7d, 0x74, 0x77, 0x72, 0x71,
-    0x50, 0x53, 0x56, 0x55, 0x5c, 0x5f, 0x5a, 0x59, 0x48, 0x4b, 0x4e, 0x4d, 0x44, 0x47, 0x42, 0x41,
-    0xc0, 0xc3, 0xc6, 0xc5, 0xcc, 0xcf, 0xca, 0xc9, 0xd8, 0xdb, 0xde, 0xdd, 0xd4, 0xd7, 0xd2, 0xd1,
-    0xf0, 0xf3, 0xf6, 0xf5, 0xfc, 0xff, 0xfa, 0xf9, 0xe8, 0xeb, 0xee, 0xed, 0xe4, 0xe7, 0xe2, 0xe1,
-    0xa0, 0xa3, 0xa6, 0xa5, 0xac, 0xaf, 0xaa, 0xa9, 0xb8, 0xbb, 0xbe, 0xbd, 0xb4, 0xb7, 0xb2, 0xb1,
-    0x90, 0x93, 0x96, 0x95, 0x9c, 0x9f, 0x9a, 0x99, 0x88, 0x8b, 0x8e, 0x8d, 0x84, 0x87, 0x82, 0x81,
-    0x9b, 0x98, 0x9d, 0x9e, 0x97, 0x94, 0x91, 0x92, 0x83, 0x80, 0x85, 0x86, 0x8f, 0x8c, 0x89, 0x8a,
-    0xab, 0xa8, 0xad, 0xae, 0xa7, 0xa4, 0xa1, 0xa2, 0xb3, 0xb0, 0xb5, 0xb6, 0xbf, 0xbc, 0xb9, 0xba,
-    0xfb, 0xf8, 0xfd, 0xfe, 0xf7, 0xf4, 0xf1, 0xf2, 0xe3, 0xe0, 0xe5, 0xe6, 0xef, 0xec, 0xe9, 0xea,
-    0xcb, 0xc8, 0xcd, 0xce, 0xc7, 0xc4, 0xc1, 0xc2, 0xd3, 0xd0, 0xd5, 0xd6, 0xdf, 0xdc, 0xd9, 0xda,
-    0x5b, 0x58, 0x5d, 0x5e, 0x57, 0x54, 0x51, 0x52, 0x43, 0x40, 0x45, 0x46, 0x4f, 0x4c, 0x49, 0x4a,
-    0x6b, 0x68, 0x6d, 0x6e, 0x67, 0x64, 0x61, 0x62, 0x73, 0x70, 0x75, 0x76, 0x7f, 0x7c, 0x79, 0x7a,
-    0x3b, 0x38, 0x3d, 0x3e, 0x37, 0x34, 0x31, 0x32, 0x23, 0x20, 0x25, 0x26, 0x2f, 0x2c, 0x29, 0x2a,
-    0x0b, 0x08, 0x0d, 0x0e, 0x07, 0x04, 0x01, 0x02, 0x13, 0x10, 0x15, 0x16, 0x1f, 0x1c, 0x19, 0x1a
-];
-
-// Initialize the main state object to store all AES operations data
-const aesState = {
-    input: {
-        plaintext: new Array(16).fill(0),
-        key: new Array(16).fill(0)
-    },
-    rounds: [], // Will hold state for each round
-    currentOperation: null,
-    isEncryption: true
-};
-
-// Initialize for 10 rounds (AES-128)
-for (let i = 0; i < 10; i++) {
-    aesState.rounds.push({
-        roundNumber: i + 1,
-        input: new Array(16).fill(0),
-        key: new Array(16).fill(0),
-        addRoundKey: new Array(16).fill(0),
-        subBytes: new Array(16).fill(0),
-        shiftRows: new Array(16).fill(0),
-        mixColumns: new Array(16).fill(0),
-        keySchedule: {
-            leftShift: new Array(4).fill(0),
-            subBytes: new Array(4).fill(0),
-            xorRcon: new Array(4).fill(0),
-            generated: new Array(16).fill(0)
-        }
-    });
+// Initialize all multiplication tables
+function initMultiplicationTables() {
+    for (let i = 0; i < 256; i++) {
+        // Multiplication by 2 in GF(2^8)
+        mul2[i] = (i < 128) ? (i << 1) : ((i << 1) ^ 0x1b);
+        
+        // Multiplication by 3 = (2 ⊕ 1)
+        mul3[i] = mul2[i] ^ i;
+    }
+    
+    // Initialize tables for inverse MixColumns
+    for (let i = 0; i < 256; i++) {
+        // Calculate mul9, mul11, mul13, mul14 using the properties of GF(2^8)
+        let x = i;
+        
+        // Multiplication by 4
+        let x2 = mul2[x];
+        let x4 = mul2[x2];
+        
+        // Multiplication by 8
+        let x8 = mul2[x4];
+        
+        // Calculate the required products
+        // 9 = 8 ⊕ 1
+        mul9[i] = x8 ^ x;
+        
+        // 11 = 8 ⊕ 2 ⊕ 1
+        mul11[i] = x8 ^ x2 ^ x;
+        
+        // 13 = 8 ⊕ 4 ⊕ 1
+        mul13[i] = x8 ^ x4 ^ x;
+        
+        // 14 = 8 ⊕ 4 ⊕ 2
+        mul14[i] = x8 ^ x4 ^ x2;
+    }
 }
+
+// Initialize tables on load
+initMultiplicationTables();
 
 // Utility functions for data conversion and formatting
 function textToHex(text) {
@@ -907,7 +887,15 @@ function parseInput(input) {
     } else if (input.startsWith('0b')) {
         return binaryStringToBytes(input);
     } else {
-        return textToHex(input);
+        // Check if it's a space-separated hex string (e.g., "32 43 f6 a8")
+        const hexPattern = /^[0-9a-fA-F\s]+$/;
+        if (hexPattern.test(input)) {
+            // Split by whitespace and convert each part to a byte
+            return input.split(/\s+/).map(hex => parseInt(hex, 16));
+        } else {
+            // Treat as text
+            return textToHex(input);
+        }
     }
 }
 
@@ -933,64 +921,78 @@ function invSubBytes(state) {
 }
 
 function shiftRows(state) {
-    // Convert to column-major order for shift rows operation
-    const rows = [
-        [state[0], state[4], state[8], state[12]],
-        [state[1], state[5], state[9], state[13]],
-        [state[2], state[6], state[10], state[14]],
-        [state[3], state[7], state[11], state[15]]
-    ];
+    // AES state is treated in column-major order
+    // This means we need to rearrange the linear array to represent the matrix correctly
     
-    // Perform row shifts
-    // Row 0: No shift
-    // Row 1: Shift left by 1
-    rows[1] = [rows[1][1], rows[1][2], rows[1][3], rows[1][0]];
-    // Row 2: Shift left by 2
-    rows[2] = [rows[2][2], rows[2][3], rows[2][0], rows[2][1]];
-    // Row 3: Shift left by 3
-    rows[3] = [rows[3][3], rows[3][0], rows[3][1], rows[3][2]];
+    // Recreate the state as a 4x4 matrix (column-major order)
+    const result = new Array(16);
     
-    // Convert back to linear array
-    return [
-        rows[0][0], rows[1][0], rows[2][0], rows[3][0],
-        rows[0][1], rows[1][1], rows[2][1], rows[3][1],
-        rows[0][2], rows[1][2], rows[2][2], rows[3][2],
-        rows[0][3], rows[1][3], rows[2][3], rows[3][3]
-    ];
+    // Row 0: No shift (s[0,0], s[0,1], s[0,2], s[0,3])
+    result[0] = state[0];
+    result[4] = state[4];
+    result[8] = state[8];
+    result[12] = state[12];
+    
+    // Row 1: Shift left by 1 (s[1,1], s[1,2], s[1,3], s[1,0])
+    result[1] = state[5];
+    result[5] = state[9];
+    result[9] = state[13];
+    result[13] = state[1];
+    
+    // Row 2: Shift left by 2 (s[2,2], s[2,3], s[2,0], s[2,1])
+    result[2] = state[10];
+    result[6] = state[14];
+    result[10] = state[2];
+    result[14] = state[6];
+    
+    // Row 3: Shift left by 3 (s[3,3], s[3,0], s[3,1], s[3,2])
+    result[3] = state[15];
+    result[7] = state[3];
+    result[11] = state[7];
+    result[15] = state[11];
+    
+    return result;
 }
 
 function invShiftRows(state) {
-    // Convert to column-major order for shift rows operation
-    const rows = [
-        [state[0], state[4], state[8], state[12]],
-        [state[1], state[5], state[9], state[13]],
-        [state[2], state[6], state[10], state[14]],
-        [state[3], state[7], state[11], state[15]]
-    ];
+    // Inverse shift rows - shift right instead of left
+    const result = new Array(16);
     
-    // Perform row shifts in reverse direction
     // Row 0: No shift
-    // Row 1: Shift right by 1
-    rows[1] = [rows[1][3], rows[1][0], rows[1][1], rows[1][2]];
-    // Row 2: Shift right by 2
-    rows[2] = [rows[2][2], rows[2][3], rows[2][0], rows[2][1]];
-    // Row 3: Shift right by 3
-    rows[3] = [rows[3][1], rows[3][2], rows[3][3], rows[3][0]];
+    result[0] = state[0];
+    result[4] = state[4];
+    result[8] = state[8];
+    result[12] = state[12];
     
-    // Convert back to linear array
-    return [
-        rows[0][0], rows[1][0], rows[2][0], rows[3][0],
-        rows[0][1], rows[1][1], rows[2][1], rows[3][1],
-        rows[0][2], rows[1][2], rows[2][2], rows[3][2],
-        rows[0][3], rows[1][3], rows[2][3], rows[3][3]
-    ];
+    // Row 1: Shift right by 1
+    result[1] = state[13];
+    result[5] = state[1];
+    result[9] = state[5];
+    result[13] = state[9];
+    
+    // Row 2: Shift right by 2
+    result[2] = state[10];
+    result[6] = state[14];
+    result[10] = state[2];
+    result[14] = state[6];
+    
+    // Row 3: Shift right by 3
+    result[3] = state[7];
+    result[7] = state[11];
+    result[11] = state[15];
+    result[15] = state[3];
+    
+    return result;
 }
 
 function mixColumns(state) {
     const result = new Array(16).fill(0);
     
-    for (let c = 0; c < 4; c++) {
-        const col = c * 4;
+    // Process each column
+    for (let i = 0; i < 4; i++) {
+        const col = i * 4;
+        
+        // For each column, apply the matrix multiplication
         result[col] = mul2[state[col]] ^ mul3[state[col + 1]] ^ state[col + 2] ^ state[col + 3];
         result[col + 1] = state[col] ^ mul2[state[col + 1]] ^ mul3[state[col + 2]] ^ state[col + 3];
         result[col + 2] = state[col] ^ state[col + 1] ^ mul2[state[col + 2]] ^ mul3[state[col + 3]];
@@ -1000,73 +1002,70 @@ function mixColumns(state) {
     return result;
 }
 
-//BLOCK 2 
 function invMixColumns(state) {
-    // For inverse mix columns, we use a different set of multiplication factors
-    // This is a simplified version using the GF(2^8) multiplication
     const result = new Array(16).fill(0);
     
-    for (let c = 0; c < 4; c++) {
-        const col = c * 4;
-        const s0 = state[col];
-        const s1 = state[col + 1];
-        const s2 = state[col + 2];
-        const s3 = state[col + 3];
+    // Process each column
+    for (let i = 0; i < 4; i++) {
+        const col = i * 4;
         
-        // Perform GF(2^8) multiplication with factors 0x0e, 0x0b, 0x0d, 0x09
-        result[col] = gmul(s0, 0x0e) ^ gmul(s1, 0x0b) ^ gmul(s2, 0x0d) ^ gmul(s3, 0x09);
-        result[col + 1] = gmul(s0, 0x09) ^ gmul(s1, 0x0e) ^ gmul(s2, 0x0b) ^ gmul(s3, 0x0d);
-        result[col + 2] = gmul(s0, 0x0d) ^ gmul(s1, 0x09) ^ gmul(s2, 0x0e) ^ gmul(s3, 0x0b);
-        result[col + 3] = gmul(s0, 0x0b) ^ gmul(s1, 0x0d) ^ gmul(s2, 0x09) ^ gmul(s3, 0x0e);
+        // For each column, apply the inverse matrix multiplication
+        result[col] = mul14[state[col]] ^ mul11[state[col + 1]] ^ mul13[state[col + 2]] ^ mul9[state[col + 3]];
+        result[col + 1] = mul9[state[col]] ^ mul14[state[col + 1]] ^ mul11[state[col + 2]] ^ mul13[state[col + 3]];
+        result[col + 2] = mul13[state[col]] ^ mul9[state[col + 1]] ^ mul14[state[col + 2]] ^ mul11[state[col + 3]];
+        result[col + 3] = mul11[state[col]] ^ mul13[state[col + 1]] ^ mul9[state[col + 2]] ^ mul14[state[col + 3]];
     }
     
     return result;
 }
 
-// Galois Field (2^8) multiplication for invMixColumns
-function gmul(a, b) {
-    let p = 0;
-    for (let i = 0; i < 8; i++) {
-        if ((b & 1) !== 0) {
-            p ^= a;
-        }
-        
-        const highBitSet = (a & 0x80) !== 0;
-        a <<= 1;
-        
-        if (highBitSet) {
-            a ^= 0x1b; // The irreducible polynomial x^8 + x^4 + x^3 + x + 1
-        }
-        
-        b >>= 1;
-    }
-    
-    return p & 0xff;
-}
-
 // Key expansion functions
 function keyExpansion(key) {
-    const expandedKey = [...key]; // Start with the original key
+    // For AES-128, we need 11 round keys (initial + 10 rounds)
+    // Each round key is 16 bytes (4 words)
+    const expandedKey = new Array(11 * 16);
     
-    // For AES-128, the key is expanded to 11 round keys (initial + 10 rounds)
-    for (let i = 4; i < 44; i++) {
-        // Calculate the new word
-        let temp = expandedKey.slice((i - 1) * 4, i * 4);
+    // First round key is the original key
+    for (let i = 0; i < 16; i++) {
+        expandedKey[i] = key[i];
+    }
+    
+    // Generate the remaining round keys
+    for (let round = 1; round <= 10; round++) {
+        // Get the last 4 bytes of the previous round key (last column)
+        let temp = [
+            expandedKey[round * 16 - 4],
+            expandedKey[round * 16 - 3],
+            expandedKey[round * 16 - 2],
+            expandedKey[round * 16 - 1]
+        ];
         
-        if (i % 4 === 0) {
-            // RotWord: rotate left by one byte
-            temp = [temp[1], temp[2], temp[3], temp[0]];
-            
-            // SubWord: apply S-box to each byte
-            temp = temp.map(byte => sBox[byte]);
-            
-            // XOR with round constant
-            temp[0] ^= rCon[Math.floor(i / 4) - 1][0];
+        // Perform operations on temp
+        // 1. Rotate left by one byte
+        temp = [temp[1], temp[2], temp[3], temp[0]];
+        
+        // 2. Apply S-box to each byte
+        for (let i = 0; i < 4; i++) {
+            temp[i] = sBox[temp[i]];
         }
         
-        // XOR with the previous word (4 bytes back)
-        for (let j = 0; j < 4; j++) {
-            expandedKey.push(expandedKey[(i - 4) * 4 + j] ^ temp[j]);
+        // 3. XOR with round constant (only first byte)
+        temp[0] ^= rCon[round - 1][0];
+        
+        // Generate new round key
+        for (let i = 0; i < 4; i++) {
+            for (let j = 0; j < 4; j++) {
+                const idx = round * 16 + i * 4 + j;
+                const prevIdx = (round - 1) * 16 + i * 4 + j;
+                
+                if (i === 0) {
+                    // First column of this round key
+                    expandedKey[idx] = expandedKey[prevIdx] ^ temp[j];
+                } else {
+                    // Other columns - XOR with previous column in this round key
+                    expandedKey[idx] = expandedKey[prevIdx] ^ expandedKey[round * 16 + (i - 1) * 4 + j];
+                }
+            }
         }
     }
     
@@ -1074,11 +1073,43 @@ function keyExpansion(key) {
 }
 
 function getRoundKey(expandedKey, round) {
-    // For AES-128, each round key is 16 bytes (4 words)
+    // Return a specific round key from the expanded key
     return expandedKey.slice(round * 16, (round + 1) * 16);
 }
+//BLOCK1B
+// AES-128 Encryption/Decryption Tool - Encryption and Decryption Implementation
 
-// Main encryption and decryption functions
+// Initialize the main state object to store all AES operations data
+const aesState = {
+    input: {
+        plaintext: new Array(16).fill(0),
+        key: new Array(16).fill(0)
+    },
+    rounds: [], // Will hold state for each round
+    currentOperation: null,
+    isEncryption: true
+};
+
+// Initialize for 10 rounds (AES-128)
+for (let i = 0; i < 10; i++) {
+    aesState.rounds.push({
+        roundNumber: i + 1,
+        input: new Array(16).fill(0),
+        key: new Array(16).fill(0),
+        addRoundKey: new Array(16).fill(0),
+        subBytes: new Array(16).fill(0),
+        shiftRows: new Array(16).fill(0),
+        mixColumns: new Array(16).fill(0),
+        keySchedule: {
+            leftShift: new Array(4).fill(0),
+            subBytes: new Array(4).fill(0),
+            xorRcon: new Array(4).fill(0),
+            generated: new Array(16).fill(0)
+        }
+    });
+}
+
+// Main encryption function
 function encryptAES(plaintext, key) {
     // Ensure plaintext and key are padded to 16 bytes
     plaintext = plaintext.slice(0, 16);
@@ -1094,9 +1125,9 @@ function encryptAES(plaintext, key) {
     aesState.input.plaintext = [...plaintext];
     aesState.input.key = [...key];
     
-    // Initial round key addition
+    // Initial round key addition (Round 0)
     let state = addRoundKey(plaintext, key);
-    aesState.rounds[0].input = [...state];
+    aesState.rounds[0].input = [...plaintext];
     aesState.rounds[0].key = [...key];
     aesState.rounds[0].addRoundKey = [...state];
     
@@ -1129,10 +1160,10 @@ function encryptAES(plaintext, key) {
         if (round > 0) {
             // Get the last column of the previous round key
             const prevKeyLastCol = [
-                aesState.rounds[round - 1].key[12],
-                aesState.rounds[round - 1].key[13],
-                aesState.rounds[round - 1].key[14],
-                aesState.rounds[round - 1].key[15]
+                expandedKey[(round - 1) * 16 + 12],
+                expandedKey[(round - 1) * 16 + 13],
+                expandedKey[(round - 1) * 16 + 14],
+                expandedKey[(round - 1) * 16 + 15]
             ];
             
             // RotWord
@@ -1176,10 +1207,14 @@ function encryptAES(plaintext, key) {
     state = addRoundKey(state, finalRoundKey);
     aesState.rounds[9].addRoundKey = [...state];
     
-    // Final result is the ciphertext
+    // Store MixColumns data as well for UI consistency (just copy the result)
+    aesState.rounds[9].mixColumns = [...state];
+    
+    // Return the ciphertext
     return state;
 }
 
+// Main decryption function
 function decryptAES(ciphertext, key) {
     // Ensure ciphertext and key are 16 bytes
     ciphertext = ciphertext.slice(0, 16);
@@ -1198,16 +1233,41 @@ function decryptAES(ciphertext, key) {
     // Initial state is the ciphertext
     let state = [...ciphertext];
     
-    // Initial round
+    // Initial round (for decryption, this is the final round of encryption in reverse)
     // AddRoundKey with the final round key
     const finalRoundKey = getRoundKey(expandedKey, 10);
     state = addRoundKey(state, finalRoundKey);
+    
+    // Store the state for visualization
     aesState.rounds[9].input = [...ciphertext];
     aesState.rounds[9].key = [...finalRoundKey];
     aesState.rounds[9].addRoundKey = [...state];
     
-    // Main rounds (9-1) in reverse
-    for (let round = 9; round > 0; round--) {
+    // InvShiftRows
+    state = invShiftRows(state);
+    aesState.rounds[9].shiftRows = [...state];
+    
+    // InvSubBytes
+    state = invSubBytes(state);
+    aesState.rounds[9].subBytes = [...state];
+    
+    // Main rounds (9-1) in reverse order
+    for (let round = 9; round >= 1; round--) {
+        // Get the round key for the current round
+        const roundKey = getRoundKey(expandedKey, round);
+        
+        // AddRoundKey
+        state = addRoundKey(state, roundKey);
+        
+        // Store for previous round visualization
+        aesState.rounds[round - 1].input = [...state];
+        aesState.rounds[round - 1].key = [...roundKey];
+        aesState.rounds[round - 1].addRoundKey = [...state];
+        
+        // InvMixColumns (except for the last round which is round 0)
+        state = invMixColumns(state);
+        aesState.rounds[round - 1].mixColumns = [...state];
+        
         // InvShiftRows
         state = invShiftRows(state);
         aesState.rounds[round - 1].shiftRows = [...state];
@@ -1216,33 +1276,14 @@ function decryptAES(ciphertext, key) {
         state = invSubBytes(state);
         aesState.rounds[round - 1].subBytes = [...state];
         
-        // Get the round key for this round
-        const roundKey = getRoundKey(expandedKey, round);
-        
-        // AddRoundKey
-        state = addRoundKey(state, roundKey);
-        aesState.rounds[round - 1].addRoundKey = [...state];
-        aesState.rounds[round - 1].key = [...roundKey];
-        
-        // InvMixColumns (except for the first round)
-        if (round > 1) {
-            state = invMixColumns(state);
-            aesState.rounds[round - 1].mixColumns = [...state];
-        }
-        
-        // Store as input for the previous round
-        if (round > 1) {
-            aesState.rounds[round - 2].input = [...state];
-        }
-        
-        // Store key schedule information
+        // Store key schedule information in the appropriate round for visualization
         if (round < 10) {
             // Get the last column of the previous round key
             const prevKeyLastCol = [
-                getRoundKey(expandedKey, round - 1)[12],
-                getRoundKey(expandedKey, round - 1)[13],
-                getRoundKey(expandedKey, round - 1)[14],
-                getRoundKey(expandedKey, round - 1)[15]
+                expandedKey[(round - 1) * 16 + 12],
+                expandedKey[(round - 1) * 16 + 13],
+                expandedKey[(round - 1) * 16 + 14],
+                expandedKey[(round - 1) * 16 + 15]
             ];
             
             // RotWord
@@ -1262,16 +1303,232 @@ function decryptAES(ciphertext, key) {
             ];
             aesState.rounds[round].keySchedule.xorRcon = [...xorWithRcon];
             
-            // Full key generation
+            // Full key generation for reference
             aesState.rounds[round].keySchedule.generated = [...roundKey];
         }
     }
     
-    // The result is the plaintext
+    // Final round (for decryption, this is round 0)
+    // AddRoundKey with the initial key
+    const initialKey = getRoundKey(expandedKey, 0);
+    state = addRoundKey(state, initialKey);
+    
+    // Store for visualization (this is not part of the rounds[] array since we use 0-based index)
+    aesState.rounds[0].key = [...initialKey]; // We already stored the input earlier
+    
+    // Return the plaintext
     return state;
 }
 
-// UI Interaction functions
+// Function to handle recalculation of rounds for visualization
+function recomputeFromRound(startRound) {
+    // Validate the start round
+    if (startRound < 1 || startRound > 10) {
+        console.error('Invalid round number for recomputation:', startRound);
+        return;
+    }
+    
+    if (aesState.isEncryption) {
+        // Handle encryption recomputation
+        recomputeEncryptionFromRound(startRound);
+    } else {
+        // Handle decryption recomputation
+        recomputeDecryptionFromRound(startRound);
+    }
+    
+    // Update all UI displays for affected rounds
+    for (let round = startRound; round <= 10; round++) {
+        updateRoundDisplays(round);
+    }
+    
+    // If we recalculated all the way to the end, update the final result display
+    if (startRound <= 10) {
+        const finalResult = aesState.isEncryption ? 
+            aesState.rounds[9].addRoundKey : // Final round output for encryption
+            aesState.rounds[0].addRoundKey;  // Final round output for decryption
+            
+        // Update the display matrix to show the final result
+        document.getElementById('display-title').textContent = 
+            aesState.isEncryption ? 'Encryption Result' : 'Decryption Result';
+        updateMatrixDisplay('display-matrix', finalResult);
+    }
+}
+
+// Helper function for encryption recomputation
+function recomputeEncryptionFromRound(startRound) {
+    // Expand the key once
+    const expandedKey = keyExpansion(aesState.input.key);
+    
+    // For first round, we start with the input plaintext
+    if (startRound === 1) {
+        // Initial AddRoundKey with the original key
+        let state = addRoundKey(aesState.input.plaintext, aesState.input.key);
+        aesState.rounds[0].input = [...aesState.input.plaintext];
+        aesState.rounds[0].key = [...aesState.input.key];
+        aesState.rounds[0].addRoundKey = [...state];
+        startRound = 2; // Continue with round 2
+    }
+    
+    // Start state is the output of the previous round
+    let state = [...aesState.rounds[startRound - 2].addRoundKey];
+    
+    // Recompute all subsequent rounds
+    for (let round = startRound - 1; round < 10; round++) {
+        // Store round input
+        aesState.rounds[round].input = [...state];
+        
+        // SubBytes
+        state = subBytes(state);
+        aesState.rounds[round].subBytes = [...state];
+        
+        // ShiftRows
+        state = shiftRows(state);
+        aesState.rounds[round].shiftRows = [...state];
+        
+        // MixColumns (except for final round)
+        if (round < 9) {
+            state = mixColumns(state);
+            aesState.rounds[round].mixColumns = [...state];
+        }
+        
+        // Get the round key
+        const roundKey = getRoundKey(expandedKey, round + 1);
+        aesState.rounds[round].key = [...roundKey];
+        
+        // AddRoundKey
+        state = addRoundKey(state, roundKey);
+        aesState.rounds[round].addRoundKey = [...state];
+        
+        // Special case for the final round
+        if (round === 9) {
+            // Store the result in mixColumns for UI consistency
+            aesState.rounds[round].mixColumns = [...state];
+        }
+        
+        // Update key schedule information
+        if (round > 0) {
+            // Get the last column of the previous round key
+            const prevKeyLastCol = [
+                expandedKey[(round - 1) * 16 + 12],
+                expandedKey[(round - 1) * 16 + 13],
+                expandedKey[(round - 1) * 16 + 14],
+                expandedKey[(round - 1) * 16 + 15]
+            ];
+            
+            // RotWord
+            const rotWord = [prevKeyLastCol[1], prevKeyLastCol[2], prevKeyLastCol[3], prevKeyLastCol[0]];
+            aesState.rounds[round].keySchedule.leftShift = [...rotWord];
+            
+            // SubBytes
+            const subWord = rotWord.map(byte => sBox[byte]);
+            aesState.rounds[round].keySchedule.subBytes = [...subWord];
+            
+            // XOR with Rcon
+            const xorWithRcon = [
+                subWord[0] ^ rCon[round - 1][0],
+                subWord[1],
+                subWord[2],
+                subWord[3]
+            ];
+            aesState.rounds[round].keySchedule.xorRcon = [...xorWithRcon];
+            
+            // Full key generation for reference
+            aesState.rounds[round].keySchedule.generated = [...roundKey];
+        }
+    }
+}
+
+// Helper function for decryption recomputation
+function recomputeDecryptionFromRound(startRound) {
+    // We're working in reverse for decryption
+    const expandedKey = keyExpansion(aesState.input.key);
+    
+    // For round 10 (first round in decryption), we start with the input ciphertext
+    if (startRound === 10) {
+        // Get the final round key
+        const finalRoundKey = getRoundKey(expandedKey, 10);
+        
+        // Initial AddRoundKey with the final round key
+        let state = addRoundKey(aesState.input.plaintext, finalRoundKey);
+        aesState.rounds[9].input = [...aesState.input.plaintext];
+        aesState.rounds[9].key = [...finalRoundKey];
+        aesState.rounds[9].addRoundKey = [...state];
+        
+        // Apply InvShiftRows and InvSubBytes to prepare for the next round
+        state = invShiftRows(state);
+        aesState.rounds[9].shiftRows = [...state];
+        
+        state = invSubBytes(state);
+        aesState.rounds[9].subBytes = [...state];
+        
+        startRound = 9; // Continue with round 9
+    }
+    
+    // Start state is the output of the next round (remember we're going backward)
+    let state = [...aesState.rounds[startRound].subBytes];
+    
+    // Recompute in reverse order, from startRound down to 1
+    for (let round = startRound; round >= 1; round--) {
+        // Get the round key for this round
+        const roundKey = getRoundKey(expandedKey, round);
+        
+        // AddRoundKey
+        state = addRoundKey(state, roundKey);
+        aesState.rounds[round - 1].input = [...state];
+        aesState.rounds[round - 1].key = [...roundKey];
+        aesState.rounds[round - 1].addRoundKey = [...state];
+        
+        // InvMixColumns (except for the first round)
+        state = invMixColumns(state);
+        aesState.rounds[round - 1].mixColumns = [...state];
+        
+        // InvShiftRows
+        state = invShiftRows(state);
+        aesState.rounds[round - 1].shiftRows = [...state];
+        
+        // InvSubBytes
+        state = invSubBytes(state);
+        aesState.rounds[round - 1].subBytes = [...state];
+        
+        // Update key schedule information if needed
+        if (round < 10) {
+            // Store key schedule information in the appropriate round
+            const prevKeyLastCol = [
+                expandedKey[(round - 1) * 16 + 12],
+                expandedKey[(round - 1) * 16 + 13],
+                expandedKey[(round - 1) * 16 + 14],
+                expandedKey[(round - 1) * 16 + 15]
+            ];
+            
+            // RotWord
+            const rotWord = [prevKeyLastCol[1], prevKeyLastCol[2], prevKeyLastCol[3], prevKeyLastCol[0]];
+            aesState.rounds[round].keySchedule.leftShift = [...rotWord];
+            
+            // SubBytes
+            const subWord = rotWord.map(byte => sBox[byte]);
+            aesState.rounds[round].keySchedule.subBytes = [...subWord];
+            
+            // XOR with Rcon
+            const xorWithRcon = [
+                subWord[0] ^ rCon[round - 1][0],
+                subWord[1],
+                subWord[2],
+                subWord[3]
+            ];
+            aesState.rounds[round].keySchedule.xorRcon = [...xorWithRcon];
+            
+            // Full key generation for reference
+            aesState.rounds[round].keySchedule.generated = [...roundKey];
+        }
+    }
+    
+    // Final round: just apply AddRoundKey with the initial key
+    const initialKey = getRoundKey(expandedKey, 0);
+    state = addRoundKey(state, initialKey);
+    aesState.rounds[0].addRoundKey = [...state]; // This is the plaintext result
+}
+
+// UI update functions
 function updateMatrixDisplay(matrixId, data) {
     const matrixCells = document.querySelectorAll(`#${matrixId} .matrix-cell`);
     
@@ -1282,84 +1539,35 @@ function updateMatrixDisplay(matrixId, data) {
     });
 }
 
-function updateCounters() {
-    const plaintextInput = document.getElementById('plaintext-input');
-    const keyInput = document.getElementById('key-input');
-    const plaintextCounter = document.getElementById('plaintext-counter');
-    const keyCounter = document.getElementById('key-counter');
+function updateRoundDisplays(round) {
+    const roundIndex = round - 1;
     
-    // Update plaintext counter
-    const plaintextBytes = parseInput(plaintextInput.value);
-    plaintextCounter.textContent = `${plaintextBytes.length * 8} bits (${plaintextBytes.length} bytes)`;
-    
-    // Update key counter
-    const keyBytes = parseInput(keyInput.value);
-    keyCounter.textContent = `${keyBytes.length * 8} bits (${keyBytes.length} bytes)`;
-}
-
-// Event handlers for input fields
-function setupInputHandlers() {
-    const plaintextInput = document.getElementById('plaintext-input');
-    const keyInput = document.getElementById('key-input');
-    
-    plaintextInput.addEventListener('input', () => {
-        updateCounters();
-        const bytes = parseInput(plaintextInput.value);
-        aesState.input.plaintext = bytes.slice(0, 16);
-        while (aesState.input.plaintext.length < 16) aesState.input.plaintext.push(0);
-        updateMatrixDisplay('state-matrix', aesState.input.plaintext);
+    // Update input matrix display
+    const inputMatrix = document.querySelector(`.matrix-input[data-round="${round}"][data-type="input"]`).nextElementSibling;
+    const inputCells = inputMatrix.querySelectorAll('.matrix-cell');
+    aesState.rounds[roundIndex].input.forEach((byte, index) => {
+        if (inputCells[index]) {
+            inputCells[index].textContent = formatCell(byte);
+        }
     });
     
-    keyInput.addEventListener('input', () => {
-        updateCounters();
-        const bytes = parseInput(keyInput.value);
-        aesState.input.key = bytes.slice(0, 16);
-        while (aesState.input.key.length < 16) aesState.input.key.push(0);
-        updateMatrixDisplay('key-matrix', aesState.input.key);
-    });
-    
-    // Add event listeners for encrypt, decrypt, and reset buttons
-    document.querySelector('.btn-encrypt').addEventListener('click', handleEncrypt);
-    document.querySelector('.btn-decrypt').addEventListener('click', handleDecrypt);
-    document.querySelector('.btn-reset').addEventListener('click', handleReset);
-    
-    // Add event listeners for round headers (accordion functionality)
-    const roundHeaders = document.querySelectorAll('.round-header');
-    roundHeaders.forEach(header => {
-        header.addEventListener('click', () => {
-            header.classList.toggle('active');
-            const content = header.nextElementSibling;
-            if (header.classList.contains('active')) {
-                content.style.display = 'block';
-                header.querySelector('div:last-child').textContent = '▼';
-            } else {
-                content.style.display = 'none';
-                header.querySelector('div:last-child').textContent = '▲';
-            }
-        });
-    });
-    
-    // Add event listeners for operation display buttons
-    const displayButtons = document.querySelectorAll('.btn-display');
-    displayButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            const round = parseInt(button.getAttribute('data-round'));
-            const operation = button.getAttribute('data-operation');
-            displayOperation(round, operation);
-        });
-    });
-    
-    // Add event listeners for matrix inputs
-    const matrixInputs = document.querySelectorAll('.matrix-input');
-    matrixInputs.forEach(input => {
-        input.addEventListener('input', () => {
-            const round = parseInt(input.getAttribute('data-round'));
-            const type = input.getAttribute('data-type');
-            handleMatrixInput(input, round, type);
-        });
+    // Update key matrix display
+    const keyMatrix = document.querySelector(`.matrix-input[data-round="${round}"][data-type="key"]`).nextElementSibling;
+    const keyCells = keyMatrix.querySelectorAll('.matrix-cell');
+    aesState.rounds[roundIndex].key.forEach((byte, index) => {
+        if (keyCells[index]) {
+            keyCells[index].textContent = formatCell(byte);
+        }
     });
 }
 
+function updateAllRoundDisplays() {
+    for (let round = 1; round <= 10; round++) {
+        updateRoundDisplays(round);
+    }
+}
+
+// Handler functions for encrypting, decrypting, and resetting
 function handleEncrypt() {
     aesState.isEncryption = true;
     
@@ -1379,6 +1587,9 @@ function handleEncrypt() {
     
     // Update all round displays
     updateAllRoundDisplays();
+    
+    // Return the ciphertext for testing/validation
+    return ciphertext;
 }
 
 function handleDecrypt() {
@@ -1400,6 +1611,9 @@ function handleDecrypt() {
     
     // Update all round displays
     updateAllRoundDisplays();
+    
+    // Return the plaintext for testing/validation
+    return plaintext;
 }
 
 function handleReset() {
@@ -1433,6 +1647,7 @@ function handleReset() {
     updateCounters();
 }
 
+// Function to display a specific operation
 function displayOperation(round, operation) {
     let title = `Round ${round}: `;
     let data = [];
@@ -1475,7 +1690,1046 @@ function displayOperation(round, operation) {
     // Update display
     document.getElementById('display-title').textContent = title;
     updateMatrixDisplay('display-matrix', data);
+    
+    // Store current operation for reference
+    aesState.currentOperation = {
+        round: round,
+        operation: operation
+    };
 }
+//BLOCK 2A 
+// AES-128 Encryption/Decryption Tool - Inverse Operations and Core UI Interaction
+
+// Enhanced function to update the display of matrices in the UI
+function updateMatrixDisplay(matrixId, data) {
+    const matrixCells = document.querySelectorAll(`#${matrixId} .matrix-cell`);
+    
+    data.forEach((value, index) => {
+        if (matrixCells[index]) {
+            matrixCells[index].textContent = formatCell(value);
+        }
+    });
+}
+
+// Update input counters for plaintext and key
+function updateCounters() {
+    const plaintextInput = document.getElementById('plaintext-input');
+    const keyInput = document.getElementById('key-input');
+    const plaintextCounter = document.getElementById('plaintext-counter');
+    const keyCounter = document.getElementById('key-counter');
+    
+    // Update plaintext counter
+    const plaintextBytes = parseInput(plaintextInput.value);
+    plaintextCounter.textContent = `${plaintextBytes.length * 8} bits (${plaintextBytes.length} bytes)`;
+    
+    // Update key counter
+    const keyBytes = parseInput(keyInput.value);
+    keyCounter.textContent = `${keyBytes.length * 8} bits (${keyBytes.length} bytes)`;
+}
+
+// Function to update the visualization of a specific round
+function updateRoundDisplays(round) {
+    const roundIndex = round - 1;
+    
+    // Find the round's input and key matrix elements in the UI
+    const inputMatrix = document.querySelector(`.matrix-input[data-round="${round}"][data-type="input"]`)?.nextElementSibling;
+    const keyMatrix = document.querySelector(`.matrix-input[data-round="${round}"][data-type="key"]`)?.nextElementSibling;
+    
+    if (!inputMatrix || !keyMatrix) {
+        console.error(`Matrix elements not found for round ${round}`);
+        return;
+    }
+    
+    // Update input matrix display
+    const inputCells = inputMatrix.querySelectorAll('.matrix-cell');
+    aesState.rounds[roundIndex].input.forEach((byte, index) => {
+        if (inputCells[index]) {
+            inputCells[index].textContent = formatCell(byte);
+        }
+    });
+    
+    // Update key matrix display
+    const keyCells = keyMatrix.querySelectorAll('.matrix-cell');
+    aesState.rounds[roundIndex].key.forEach((byte, index) => {
+        if (keyCells[index]) {
+            keyCells[index].textContent = formatCell(byte);
+        }
+    });
+}
+
+// Update all rounds' UI displays
+function updateAllRoundDisplays() {
+    for (let round = 1; round <= 10; round++) {
+        updateRoundDisplays(round);
+    }
+}
+
+// Function to handle matrix input changes
+function handleMatrixInput(inputElement, round, type) {
+    const value = inputElement.value.trim();
+    let bytes = [];
+    
+    // Parse the input
+    if (value) {
+        bytes = parseInput(value);
+        // Ensure we have 16 bytes
+        bytes = bytes.slice(0, 16);
+    }
+    
+    while (bytes.length < 16) {
+        bytes.push(0);
+    }
+    
+    // Update the matrix display next to the input
+    const matrix = inputElement.nextElementSibling;
+    const cells = matrix.querySelectorAll('.matrix-cell');
+    
+    bytes.forEach((byte, index) => {
+        if (cells[index]) {
+            cells[index].textContent = formatCell(byte);
+        }
+    });
+    
+    // Update the state based on input type
+    if (type === 'input') {
+        aesState.rounds[round - 1].input = [...bytes];
+    } else if (type === 'key') {
+        aesState.rounds[round - 1].key = [...bytes];
+    }
+}
+
+// Enhanced function for displaying operations with detailed information
+function displayOperation(round, operation) {
+    let title = `Round ${round}: `;
+    let data = [];
+    let description = '';
+    
+    // Get data and description based on operation
+    switch (operation) {
+        case 'addRoundKey':
+            title += 'AddRoundKey';
+            description = 'XOR each byte of the state with the corresponding byte of the round key.';
+            data = aesState.rounds[round - 1].addRoundKey;
+            break;
+        case 'subBytes':
+            title += 'SubBytes';
+            description = 'Replace each byte with its corresponding value in the S-box for non-linearity.';
+            data = aesState.rounds[round - 1].subBytes;
+            break;
+        case 'shiftRows':
+            title += 'ShiftRows';
+            description = 'Shift the rows of the state cyclically for diffusion.';
+            data = aesState.rounds[round - 1].shiftRows;
+            break;
+        case 'mixColumns':
+            title += 'MixColumns';
+            description = 'Linear transformation that mixes the columns for diffusion.';
+            data = aesState.rounds[round - 1].mixColumns;
+            break;
+        case 'keyLS1':
+            title += 'Key LeftShift-1';
+            description = 'Rotate the last column of the previous round key to the left by 1 byte.';
+            data = [...aesState.rounds[round - 1].keySchedule.leftShift, ...new Array(12).fill(0)];
+            break;
+        case 'keySubBytes':
+            title += 'Key SubBytes';
+            description = 'Apply S-box substitution to each byte of the rotated word.';
+            data = [...aesState.rounds[round - 1].keySchedule.subBytes, ...new Array(12).fill(0)];
+            break;
+        case 'keyXorRcon':
+            title += 'Key XOR with Rcon';
+            description = 'XOR the first byte with a round-dependent constant.';
+            data = [...aesState.rounds[round - 1].keySchedule.xorRcon, ...new Array(12).fill(0)];
+            break;
+        default:
+            title = 'Unknown Operation';
+            description = 'Operation not recognized.';
+            data = new Array(16).fill(0);
+    }
+    
+    // Update display title and description
+    document.getElementById('display-title').textContent = title;
+    
+    // Add or update description element
+    let descriptionElement = document.getElementById('operation-description');
+    if (!descriptionElement) {
+        descriptionElement = document.createElement('div');
+        descriptionElement.id = 'operation-description';
+        descriptionElement.style.textAlign = 'center';
+        descriptionElement.style.marginBottom = '10px';
+        descriptionElement.style.padding = '8px';
+        descriptionElement.style.backgroundColor = '#f8f9fa';
+        descriptionElement.style.borderRadius = '5px';
+        descriptionElement.style.fontSize = '14px';
+        
+        const displayMatrix = document.getElementById('display-matrix');
+        if (displayMatrix && displayMatrix.parentNode) {
+            displayMatrix.parentNode.insertBefore(descriptionElement, displayMatrix);
+        }
+    }
+    
+    descriptionElement.textContent = description;
+    
+    // Update matrix display
+    updateMatrixDisplay('display-matrix', data);
+    
+    // Store current operation for reference
+    aesState.currentOperation = {
+        round: round,
+        operation: operation
+    };
+    
+    // Highlight the active operation button
+    const operationButtons = document.querySelectorAll('.btn-display');
+    operationButtons.forEach(btn => {
+        btn.classList.remove('active-operation');
+        if (btn.getAttribute('data-round') == round && btn.getAttribute('data-operation') == operation) {
+            btn.classList.add('active-operation');
+        }
+    });
+}
+
+// Function to visualize the key schedule for better understanding
+function visualizeKeySchedule(round) {
+    if (round <= 1) {
+        console.warn('No key schedule visualization available for Round 1');
+        document.getElementById('display-title').textContent = 'Round 1 does not have key schedule operations';
+        return;
+    }
+    
+    const roundIndex = round - 1;
+    
+    // Get the key schedule data
+    const leftShift = aesState.rounds[roundIndex].keySchedule.leftShift;
+    const subBytesKey = aesState.rounds[roundIndex].keySchedule.subBytes;
+    const xorRcon = aesState.rounds[roundIndex].keySchedule.xorRcon;
+    
+    // Get the previous round key (last column)
+    const prevRoundKey = aesState.rounds[roundIndex - 1].key;
+    const prevKeyLastCol = [
+        prevRoundKey[12],
+        prevRoundKey[13],
+        prevRoundKey[14],
+        prevRoundKey[15]
+    ];
+    
+    // Display the key schedule operations in the master display area
+    document.getElementById('display-title').textContent = `Round ${round}: Key Schedule`;
+    
+    // Create a more detailed display in the main matrix
+    const displayMatrix = document.getElementById('display-matrix');
+    const cells = displayMatrix.querySelectorAll('.matrix-cell');
+    
+    // Clear all cells first
+    cells.forEach(cell => {
+        cell.textContent = '--';
+        cell.style.backgroundColor = '';
+    });
+    
+    // Display the key generation process with color coding
+    // First row: Previous key's last column
+    for (let i = 0; i < 4; i++) {
+        cells[i].textContent = formatCell(prevKeyLastCol[i]);
+        cells[i].style.backgroundColor = '#f0f8ff'; // Light blue
+    }
+    
+    // Second row: After left shift
+    for (let i = 0; i < 4; i++) {
+        cells[i + 4].textContent = formatCell(leftShift[i]);
+        cells[i + 4].style.backgroundColor = '#e6f2ff'; // Lighter blue
+    }
+    
+    // Third row: After SubBytes
+    for (let i = 0; i < 4; i++) {
+        cells[i + 8].textContent = formatCell(subBytesKey[i]);
+        cells[i + 8].style.backgroundColor = '#d9ecff'; // Even lighter blue
+    }
+    
+    // Fourth row: After XOR with Rcon
+    for (let i = 0; i < 4; i++) {
+        cells[i + 12].textContent = formatCell(xorRcon[i]);
+        cells[i + 12].style.backgroundColor = '#ccebff'; // Lightest blue
+    }
+    
+    // Add or update description for key schedule
+    let descriptionElement = document.getElementById('operation-description');
+    if (!descriptionElement) {
+        descriptionElement = document.createElement('div');
+        descriptionElement.id = 'operation-description';
+        descriptionElement.style.textAlign = 'center';
+        descriptionElement.style.marginBottom = '10px';
+        descriptionElement.style.padding = '8px';
+        descriptionElement.style.backgroundColor = '#f8f9fa';
+        descriptionElement.style.borderRadius = '5px';
+        descriptionElement.style.fontSize = '14px';
+        
+        displayMatrix.parentNode.insertBefore(descriptionElement, displayMatrix);
+    }
+    
+    descriptionElement.innerHTML = `
+        <div style="text-align: left;">
+            <p><b>Key Schedule Process:</b></p>
+            <ol>
+                <li>Take the last column of the previous round key</li>
+                <li>Rotate left by one byte (RotWord)</li>
+                <li>Apply S-box substitution to each byte (SubBytes)</li>
+                <li>XOR the first byte with the round constant</li>
+                <li>XOR with columns of the previous round key to create the new round key</li>
+            </ol>
+        </div>
+    `;
+}
+
+// Function to create before/after comparison for operations
+function displayOperationComparison(round, operation) {
+    const roundIndex = round - 1;
+    let beforeData = [];
+    let afterData = [];
+    
+    // Determine before/after data based on operation
+    switch(operation) {
+        case 'addRoundKey':
+            if (aesState.isEncryption) {
+                if (round === 1) {
+                    beforeData = [...aesState.input.plaintext];
+                } else if (round === 10) {
+                    beforeData = [...aesState.rounds[roundIndex].shiftRows];
+                } else {
+                    beforeData = [...aesState.rounds[roundIndex].mixColumns];
+                }
+            } else {
+                // For decryption
+                if (round === 10) {
+                    beforeData = [...aesState.input.plaintext]; // Ciphertext
+                } else {
+                    beforeData = [...aesState.rounds[roundIndex].subBytes];
+                }
+            }
+            afterData = [...aesState.rounds[roundIndex].addRoundKey];
+            break;
+            
+        case 'subBytes':
+            beforeData = aesState.isEncryption ? 
+                [...aesState.rounds[roundIndex].input] : 
+                [...aesState.rounds[roundIndex].shiftRows];
+            afterData = [...aesState.rounds[roundIndex].subBytes];
+            break;
+            
+        case 'shiftRows':
+            beforeData = aesState.isEncryption ?
+                [...aesState.rounds[roundIndex].subBytes] :
+                [...aesState.rounds[roundIndex].addRoundKey];
+            afterData = [...aesState.rounds[roundIndex].shiftRows];
+            break;
+            
+        case 'mixColumns':
+            beforeData = [...aesState.rounds[roundIndex].shiftRows];
+            afterData = [...aesState.rounds[roundIndex].mixColumns];
+            break;
+            
+        case 'keyLS1':
+        case 'keySubBytes':
+        case 'keyXorRcon':
+            // For key operations, use the visualizeKeySchedule function instead
+            visualizeKeySchedule(round);
+            return;
+            
+        default:
+            beforeData = new Array(16).fill(0);
+            afterData = new Array(16).fill(0);
+    }
+    
+    // Create or update the comparison display
+    // First check if we need to create a comparison container
+    let comparisonContainer = document.getElementById('operation-comparison');
+    if (!comparisonContainer) {
+        comparisonContainer = document.createElement('div');
+        comparisonContainer.id = 'operation-comparison';
+        comparisonContainer.style.display = 'flex';
+        comparisonContainer.style.justifyContent = 'space-between';
+        comparisonContainer.style.marginTop = '15px';
+        comparisonContainer.style.padding = '10px';
+        comparisonContainer.style.backgroundColor = '#f8f9fa';
+        comparisonContainer.style.borderRadius = '8px';
+        
+        comparisonContainer.innerHTML = `
+            <div style="flex: 1; margin-right: 10px;">
+                <div id="before-title" style="font-weight: bold; margin-bottom: 5px; text-align: center;">Before</div>
+                <div class="matrix" id="before-matrix" style="margin: 0 auto;">
+                    ${Array(16).fill('<div class="matrix-cell">--</div>').join('')}
+                </div>
+            </div>
+            <div style="flex: 1; margin-left: 10px;">
+                <div id="after-title" style="font-weight: bold; margin-bottom: 5px; text-align: center;">After</div>
+                <div class="matrix" id="after-matrix" style="margin: 0 auto;">
+                    ${Array(16).fill('<div class="matrix-cell">--</div>').join('')}
+                </div>
+            </div>
+        `;
+        
+        // Add to the DOM after the main display matrix
+        const displayMatrix = document.getElementById('display-matrix');
+        if (displayMatrix && displayMatrix.parentNode) {
+            displayMatrix.parentNode.appendChild(comparisonContainer);
+        }
+    } else {
+        // Show the container if it's hidden
+        comparisonContainer.style.display = 'flex';
+    }
+    
+    // Update the before matrix
+    const beforeMatrix = document.getElementById('before-matrix');
+    const beforeCells = beforeMatrix.querySelectorAll('.matrix-cell');
+    beforeData.forEach((byte, index) => {
+        if (beforeCells[index]) {
+            beforeCells[index].textContent = formatCell(byte);
+            beforeCells[index].style.backgroundColor = '#fff8dc'; // Light yellow
+        }
+    });
+    
+    // Update the after matrix
+    const afterMatrix = document.getElementById('after-matrix');
+    const afterCells = afterMatrix.querySelectorAll('.matrix-cell');
+    afterData.forEach((byte, index) => {
+        if (afterCells[index]) {
+            afterCells[index].textContent = formatCell(byte);
+            afterCells[index].style.backgroundColor = '#e6ffe6'; // Light green
+        }
+    });
+    
+    // Update the titles to be more specific
+    document.getElementById('before-title').textContent = `Before ${formatOperationName(operation)}`;
+    document.getElementById('after-title').textContent = `After ${formatOperationName(operation)}`;
+}
+
+// Helper function to format operation name
+function formatOperationName(operation) {
+    switch(operation) {
+        case 'addRoundKey': return 'AddRoundKey';
+        case 'subBytes': return 'SubBytes';
+        case 'shiftRows': return 'ShiftRows';
+        case 'mixColumns': return 'MixColumns';
+        case 'keyLS1': return 'LeftShift-1';
+        case 'keySubBytes': return 'Key SubBytes';
+        case 'keyXorRcon': return 'XOR with Rcon';
+        default: return operation;
+    }
+}
+
+// Enhanced displayOperation function that uses both visualization techniques
+function enhancedDisplayOperation(round, operation) {
+    // First do the basic display
+    displayOperation(round, operation);
+    
+    // Then add the detailed comparison
+    if (['keyLS1', 'keySubBytes', 'keyXorRcon'].includes(operation)) {
+        // For key operations, use specialized key schedule visualization
+        visualizeKeySchedule(round);
+    } else {
+        // For other operations, show before/after comparison
+        displayOperationComparison(round, operation);
+    }
+}
+
+// Function to show the final encryption/decryption result in a nicer format
+function displayFinalResult(result, isEncryption) {
+    // Create or get the result container
+    let resultContainer = document.getElementById('final-result');
+    if (!resultContainer) {
+        resultContainer = document.createElement('div');
+        resultContainer.id = 'final-result';
+        resultContainer.style.marginTop = '20px';
+        resultContainer.style.padding = '15px';
+        resultContainer.style.backgroundColor = '#f0f8ff';
+        resultContainer.style.borderRadius = '8px';
+        resultContainer.style.boxShadow = '0 2px 5px rgba(0,0,0,0.1)';
+        
+        // Create the structure for the result display
+        resultContainer.innerHTML = `
+            <div id="result-title" style="font-size: 18px; font-weight: bold; margin-bottom: 10px; text-align: center; color: var(--primary-color);"></div>
+            <div style="display: flex; flex-wrap: wrap; gap: 15px; justify-content: center;">
+                <div style="flex: 1; min-width: 250px;">
+                    <div style="font-weight: bold; margin-bottom: 5px;">Hex Format:</div>
+                    <input id="result-hex" type="text" class="input-field" style="width: 100%;" readonly>
+                </div>
+                <div style="flex: 1; min-width: 250px;">
+                    <div style="font-weight: bold; margin-bottom: 5px;">Text Representation:</div>
+                    <input id="result-text" type="text" class="input-field" style="width: 100%;" readonly>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 15px;">
+                <button id="copy-hex-btn" class="btn" style="background-color: var(--info); margin-right: 10px;">Copy Hex</button>
+                <button id="copy-text-btn" class="btn" style="background-color: var(--secondary-color);">Copy Text</button>
+            </div>
+        `;
+        
+        // Add it to the DOM
+        const operationDisplay = document.querySelector('.operation-display');
+        if (operationDisplay) {
+            operationDisplay.appendChild(resultContainer);
+        }
+        
+        // Add event listeners for the copy buttons
+        document.getElementById('copy-hex-btn').addEventListener('click', function() {
+            const hexValue = document.getElementById('result-hex').value;
+            navigator.clipboard.writeText(hexValue)
+                .then(() => {
+                    this.textContent = 'Copied!';
+                    setTimeout(() => { this.textContent = 'Copy Hex'; }, 2000);
+                })
+                .catch(err => {
+                    console.error('Could not copy text: ', err);
+                    alert('Failed to copy to clipboard');
+                });
+        });
+        
+        document.getElementById('copy-text-btn').addEventListener('click', function() {
+            const textValue = document.getElementById('result-text').value;
+            navigator.clipboard.writeText(textValue)
+                .then(() => {
+                    this.textContent = 'Copied!';
+                    setTimeout(() => { this.textContent = 'Copy Text'; }, 2000);
+                })
+                .catch(err => {
+                    console.error('Could not copy text: ', err);
+                    alert('Failed to copy to clipboard');
+                });
+        });
+    }
+    
+    // Update the result container
+    resultContainer.style.display = 'block';
+    document.getElementById('result-title').textContent = isEncryption ? 
+        'Encryption Result (Ciphertext)' : 'Decryption Result (Plaintext)';
+    
+    // Set the hex and text values
+    document.getElementById('result-hex').value = '0x' + bytesToHexString(result);
+    document.getElementById('result-text').value = hexToText(result);
+}
+//BLOCK 2B
+// AES-128 Encryption/Decryption Tool - Enhanced Handler Functions and State Visualization
+
+// Enhanced handler for encryption operation
+function enhancedHandleEncrypt() {
+    aesState.isEncryption = true;
+    
+    // Get input and key from the UI
+    const plaintextInput = document.getElementById('plaintext-input');
+    const keyInput = document.getElementById('key-input');
+    
+    const plaintext = parseInput(plaintextInput.value);
+    const key = parseInput(keyInput.value);
+    
+    // Perform encryption
+    const ciphertext = encryptAES(plaintext, key);
+    
+    // Update the UI to show encryption result
+    document.getElementById('display-title').textContent = 'Encryption Result';
+    updateMatrixDisplay('display-matrix', ciphertext);
+    
+    // Update all round displays
+    updateAllRoundDisplays();
+    
+    // Show the final result in a nicer format
+    displayFinalResult(ciphertext, true);
+    
+    // Visual feedback
+    const btn = document.querySelector('.btn-encrypt');
+    if (btn) {
+        btn.textContent = '✓ Encrypted';
+        setTimeout(() => {
+            btn.textContent = 'Encrypt';
+        }, 2000);
+    }
+    
+    // For debugging: log the ciphertext in hex format
+    console.log('Ciphertext:', bytesToHexString(ciphertext));
+    
+    return ciphertext;
+}
+
+// Enhanced handler for decryption operation
+function enhancedHandleDecrypt() {
+    aesState.isEncryption = false;
+    
+    // Get input and key from the UI
+    const ciphertextInput = document.getElementById('plaintext-input');
+    const keyInput = document.getElementById('key-input');
+    
+    const ciphertext = parseInput(ciphertextInput.value);
+    const key = parseInput(keyInput.value);
+    
+    // Perform decryption
+    const plaintext = decryptAES(ciphertext, key);
+    
+    // Update the UI to show decryption result
+    document.getElementById('display-title').textContent = 'Decryption Result';
+    updateMatrixDisplay('display-matrix', plaintext);
+    
+    // Update all round displays
+    updateAllRoundDisplays();
+    
+    // Show the final result in a nicer format
+    displayFinalResult(plaintext, false);
+    
+    // Visual feedback
+    const btn = document.querySelector('.btn-decrypt');
+    if (btn) {
+        btn.textContent = '✓ Decrypted';
+        setTimeout(() => {
+            btn.textContent = 'Decrypt';
+        }, 2000);
+    }
+    
+    // For debugging: log the plaintext in hex format
+    console.log('Plaintext:', bytesToHexString(plaintext));
+    
+    return plaintext;
+}
+
+// Enhanced reset function with better visual feedback
+function enhancedHandleReset() {
+    // Reset all state
+    aesState.input.plaintext.fill(0);
+    aesState.input.key.fill(0);
+    
+    for (let i = 0; i < 10; i++) {
+        aesState.rounds[i].input.fill(0);
+        aesState.rounds[i].key.fill(0);
+        aesState.rounds[i].addRoundKey.fill(0);
+        aesState.rounds[i].subBytes.fill(0);
+        aesState.rounds[i].shiftRows.fill(0);
+        aesState.rounds[i].mixColumns.fill(0);
+        aesState.rounds[i].keySchedule.leftShift.fill(0);
+        aesState.rounds[i].keySchedule.subBytes.fill(0);
+        aesState.rounds[i].keySchedule.xorRcon.fill(0);
+        aesState.rounds[i].keySchedule.generated.fill(0);
+    }
+    
+    // Reset UI
+    document.getElementById('plaintext-input').value = '';
+    document.getElementById('key-input').value = '';
+    document.getElementById('display-title').textContent = 'No Operation Selected';
+    
+    updateMatrixDisplay('state-matrix', aesState.input.plaintext);
+    updateMatrixDisplay('key-matrix', aesState.input.key);
+    updateMatrixDisplay('display-matrix', new Array(16).fill(0));
+    
+    // Hide the results container if it exists
+    const resultContainer = document.getElementById('final-result');
+    if (resultContainer) {
+        resultContainer.style.display = 'none';
+    }
+    
+    // Hide the comparison container if it exists
+    const comparisonContainer = document.getElementById('operation-comparison');
+    if (comparisonContainer) {
+        comparisonContainer.style.display = 'none';
+    }
+    
+    // Clear the operation description
+    const descriptionElement = document.getElementById('operation-description');
+    if (descriptionElement) {
+        descriptionElement.textContent = '';
+    }
+    
+    updateAllRoundDisplays();
+    updateCounters();
+    
+    // Visual feedback
+    const btn = document.querySelector('.btn-reset');
+    if (btn) {
+        btn.textContent = '✓ Reset Complete';
+        setTimeout(() => {
+            btn.textContent = 'Reset All';
+        }, 2000);
+    }
+}
+
+// Function to highlight changes between states for better visualization
+function highlightStateChanges(beforeState, afterState) {
+    // Create an array to track which cells changed
+    const changedIndices = [];
+    
+    // Find cells that changed
+    for (let i = 0; i < 16; i++) {
+        if (beforeState[i] !== afterState[i]) {
+            changedIndices.push(i);
+        }
+    }
+    
+    return changedIndices;
+}
+
+// Function to add animations for visualizing AES operations
+function animateOperation(operation, round) {
+    const roundIndex = round - 1;
+    let beforeState = [];
+    let afterState = [];
+    
+    // Get before and after states based on operation
+    switch(operation) {
+        case 'addRoundKey':
+            // The input depends on where in the algorithm we are
+            if (aesState.isEncryption) {
+                if (round === 1) {
+                    beforeState = [...aesState.input.plaintext];
+                } else if (round === 10) {
+                    beforeState = [...aesState.rounds[roundIndex].shiftRows];
+                } else {
+                    beforeState = [...aesState.rounds[roundIndex].mixColumns];
+                }
+            } else {
+                // For decryption
+                if (round === 10) {
+                    beforeState = [...aesState.input.plaintext]; // Ciphertext
+                } else {
+                    beforeState = [...aesState.rounds[roundIndex].subBytes];
+                }
+            }
+            afterState = [...aesState.rounds[roundIndex].addRoundKey];
+            break;
+            
+        case 'subBytes':
+            beforeState = [...aesState.rounds[roundIndex].input];
+            afterState = [...aesState.rounds[roundIndex].subBytes];
+            break;
+            
+        case 'shiftRows':
+            beforeState = [...aesState.rounds[roundIndex].subBytes];
+            afterState = [...aesState.rounds[roundIndex].shiftRows];
+            break;
+            
+        case 'mixColumns':
+            beforeState = [...aesState.rounds[roundIndex].shiftRows];
+            afterState = [...aesState.rounds[roundIndex].mixColumns];
+            break;
+    }
+    
+    // Get the changed indices
+    const changedIndices = highlightStateChanges(beforeState, afterState);
+    
+    // Get the matrix cells
+    const displayMatrix = document.getElementById('display-matrix');
+    const cells = displayMatrix.querySelectorAll('.matrix-cell');
+    
+    // Apply animation to changed cells
+    changedIndices.forEach(index => {
+        if (cells[index]) {
+            cells[index].style.transition = 'background-color 0.3s ease';
+            cells[index].style.backgroundColor = '#ffeb3b'; // Highlight yellow
+            
+            // Revert back after a delay
+            setTimeout(() => {
+                cells[index].style.backgroundColor = '';
+            }, 1000);
+        }
+    });
+}
+
+// Function to visualize the full encryption/decryption process
+function visualizeFullProcess() {
+    // Create a container for the visualization
+    let processContainer = document.getElementById('process-visualization');
+    if (!processContainer) {
+        processContainer = document.createElement('div');
+        processContainer.id = 'process-visualization';
+        processContainer.style.marginTop = '25px';
+        processContainer.style.padding = '20px';
+        processContainer.style.backgroundColor = '#f9f9f9';
+        processContainer.style.borderRadius = '10px';
+        processContainer.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
+        
+        // Create header
+        const header = document.createElement('div');
+        header.style.display = 'flex';
+        header.style.justifyContent = 'space-between';
+        header.style.alignItems = 'center';
+        header.style.marginBottom = '20px';
+        header.style.paddingBottom = '10px';
+        header.style.borderBottom = '1px solid #ddd';
+        
+        const title = document.createElement('h3');
+        title.textContent = aesState.isEncryption ? 'AES-128 Encryption Process' : 'AES-128 Decryption Process';
+        title.style.margin = '0';
+        title.style.color = 'var(--primary-color)';
+        
+        const closeBtn = document.createElement('button');
+        closeBtn.textContent = 'Close';
+        closeBtn.className = 'btn';
+        closeBtn.style.backgroundColor = 'var(--danger)';
+        closeBtn.style.padding = '5px 10px';
+        closeBtn.style.fontSize = '14px';
+        closeBtn.addEventListener('click', () => {
+            processContainer.style.display = 'none';
+        });
+        
+        header.appendChild(title);
+        header.appendChild(closeBtn);
+        processContainer.appendChild(header);
+        
+        // Add to DOM
+        const mainContainer = document.querySelector('.container');
+        if (mainContainer) {
+            mainContainer.appendChild(processContainer);
+        } else {
+            document.body.appendChild(processContainer);
+        }
+    }
+    
+    // Show the container
+    processContainer.style.display = 'block';
+    
+    // Clear previous content (except header)
+    Array.from(processContainer.children).slice(1).forEach(child => child.remove());
+    
+    // Create content based on encryption/decryption
+    const stepsContainer = document.createElement('div');
+    stepsContainer.style.display = 'flex';
+    stepsContainer.style.flexDirection = 'column';
+    stepsContainer.style.gap = '15px';
+    
+    if (aesState.isEncryption) {
+        // Encryption visualization
+        
+        // Initial state
+        stepsContainer.appendChild(createProcessStep('Initial State (Plaintext)', aesState.input.plaintext));
+        
+        // Initial round key addition
+        stepsContainer.appendChild(createProcessArrow());
+        stepsContainer.appendChild(createProcessStep('Initial AddRoundKey', aesState.rounds[0].addRoundKey));
+        
+        // Main rounds (1-9)
+        for (let round = 1; round < 9; round++) {
+            stepsContainer.appendChild(createProcessArrow());
+            stepsContainer.appendChild(createProcessStep(`Round ${round} (Complete)`, aesState.rounds[round].addRoundKey));
+        }
+        
+        // Final round (10)
+        stepsContainer.appendChild(createProcessArrow());
+        stepsContainer.appendChild(createProcessStep('Final Round Output (Ciphertext)', aesState.rounds[9].addRoundKey, true));
+    } else {
+        // Decryption visualization
+        
+        // Initial state
+        stepsContainer.appendChild(createProcessStep('Initial State (Ciphertext)', aesState.input.plaintext));
+        
+        // Initial round operations
+        stepsContainer.appendChild(createProcessArrow());
+        stepsContainer.appendChild(createProcessStep('After Initial Round Operations', aesState.rounds[9].subBytes));
+        
+        // Main rounds (9-1) in reverse
+        for (let round = 8; round >= 1; round--) {
+            stepsContainer.appendChild(createProcessArrow());
+            stepsContainer.appendChild(createProcessStep(`After Round ${round + 1} Operations`, aesState.rounds[round].subBytes));
+        }
+        
+        // Final output
+        stepsContainer.appendChild(createProcessArrow());
+        stepsContainer.appendChild(createProcessStep('Final Output (Plaintext)', aesState.rounds[0].addRoundKey, true));
+    }
+    
+    processContainer.appendChild(stepsContainer);
+    
+    // Scroll to view
+    processContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// Helper function to create a process step
+function createProcessStep(title, data, highlight = false) {
+    const step = document.createElement('div');
+    step.style.display = 'flex';
+    step.style.alignItems = 'center';
+    step.style.backgroundColor = highlight ? '#e6f7ff' : '#fff';
+    step.style.padding = '15px';
+    step.style.borderRadius = '8px';
+    step.style.boxShadow = highlight ? '0 0 8px rgba(24, 144, 255, 0.5)' : '0 2px 5px rgba(0,0,0,0.05)';
+    step.style.border = highlight ? '1px solid #91d5ff' : '1px solid #eee';
+    
+    const titleElement = document.createElement('div');
+    titleElement.textContent = title;
+    titleElement.style.flex = '1';
+    titleElement.style.fontWeight = 'bold';
+    
+    const matrixContainer = document.createElement('div');
+    matrixContainer.className = 'matrix';
+    matrixContainer.style.display = 'grid';
+    matrixContainer.style.gridTemplateColumns = 'repeat(4, 1fr)';
+    matrixContainer.style.gap = '2px';
+    matrixContainer.style.padding = '8px';
+    matrixContainer.style.backgroundColor = '#f0f0f0';
+    matrixContainer.style.borderRadius = '5px';
+    
+    // Create cells
+    for (let i = 0; i < 16; i++) {
+        const cell = document.createElement('div');
+        cell.className = 'matrix-cell';
+        cell.textContent = formatCell(data[i] || 0);
+        cell.style.width = '30px';
+        cell.style.height = '30px';
+        cell.style.display = 'flex';
+        cell.style.alignItems = 'center';
+        cell.style.justifyContent = 'center';
+        cell.style.backgroundColor = 'white';
+        cell.style.border = '1px solid #ddd';
+        cell.style.fontFamily = 'monospace';
+        matrixContainer.appendChild(cell);
+    }
+    
+    step.appendChild(titleElement);
+    step.appendChild(matrixContainer);
+    
+    return step;
+}
+
+// Helper function to create a process arrow
+function createProcessArrow() {
+    const arrow = document.createElement('div');
+    arrow.textContent = '↓';
+    arrow.style.textAlign = 'center';
+    arrow.style.fontSize = '24px';
+    arrow.style.color = 'var(--primary-color)';
+    arrow.style.margin = '5px 0';
+    return arrow;
+}
+
+// Initialize UI enhancements
+function setupEnhancedUIInteractions() {
+    // Replace the original event handlers with enhanced versions
+    
+    // Add enhanced event listeners for encrypt, decrypt, reset buttons
+    const encryptBtn = document.querySelector('.btn-encrypt');
+    if (encryptBtn) {
+        // Clone to remove existing listeners
+        const newEncryptBtn = encryptBtn.cloneNode(true);
+        encryptBtn.parentNode.replaceChild(newEncryptBtn, encryptBtn);
+        newEncryptBtn.addEventListener('click', enhancedHandleEncrypt);
+    }
+    
+    const decryptBtn = document.querySelector('.btn-decrypt');
+    if (decryptBtn) {
+        // Clone to remove existing listeners
+        const newDecryptBtn = decryptBtn.cloneNode(true);
+        decryptBtn.parentNode.replaceChild(newDecryptBtn, decryptBtn);
+        newDecryptBtn.addEventListener('click', enhancedHandleDecrypt);
+    }
+    
+    const resetBtn = document.querySelector('.btn-reset');
+    if (resetBtn) {
+        // Clone to remove existing listeners
+        const newResetBtn = resetBtn.cloneNode(true);
+        resetBtn.parentNode.replaceChild(newResetBtn, resetBtn);
+        newResetBtn.addEventListener('click', enhancedHandleReset);
+    }
+    
+    // Replace display buttons with enhanced version
+    const displayButtons = document.querySelectorAll('.btn-display');
+    displayButtons.forEach(button => {
+        // Clone to remove existing listeners
+        const newButton = button.cloneNode(true);
+        button.parentNode.replaceChild(newButton, button);
+        
+        // Add enhanced event listener
+        newButton.addEventListener('click', () => {
+            const round = parseInt(newButton.getAttribute('data-round'));
+            const operation = newButton.getAttribute('data-operation');
+            enhancedDisplayOperation(round, operation);
+            
+            // Animate the operation
+            animateOperation(operation, round);
+        });
+    });
+    
+    // Add a button to visualize the entire process
+    const buttonGroup = document.querySelector('.button-group');
+    if (buttonGroup) {
+        const processBtn = document.createElement('button');
+        processBtn.textContent = 'Show Full Process';
+        processBtn.className = 'btn';
+        processBtn.style.backgroundColor = 'var(--secondary-color)';
+        
+        processBtn.addEventListener('click', visualizeFullProcess);
+        
+        buttonGroup.appendChild(processBtn);
+    }
+    
+    // Add CSS for enhanced UI
+    const style = document.createElement('style');
+    style.textContent = `
+        .active-operation {
+            background-color: var(--accent-color) !important;
+            box-shadow: 0 0 8px rgba(244, 196, 48, 0.7) !important;
+        }
+        
+        @keyframes highlight {
+            0% { background-color: initial; }
+            50% { background-color: #ffeb3b; }
+            100% { background-color: initial; }
+        }
+        
+        .highlight-animation {
+            animation: highlight 1s ease;
+        }
+    `;
+    document.head.appendChild(style);
+    
+    console.log('Enhanced UI interactions set up');
+}
+
+// Call this function when the DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    setupEnhancedUIInteractions();
+    
+    // Set up listeners for input fields
+    const plaintextInput = document.getElementById('plaintext-input');
+    const keyInput = document.getElementById('key-input');
+    
+    if (plaintextInput) {
+        plaintextInput.addEventListener('input', () => {
+            updateCounters();
+            const bytes = parseInput(plaintextInput.value);
+            aesState.input.plaintext = bytes.slice(0, 16);
+            while (aesState.input.plaintext.length < 16) aesState.input.plaintext.push(0);
+            updateMatrixDisplay('state-matrix', aesState.input.plaintext);
+        });
+    }
+    
+    if (keyInput) {
+        keyInput.addEventListener('input', () => {
+            updateCounters();
+            const bytes = parseInput(keyInput.value);
+            aesState.input.key = bytes.slice(0, 16);
+            while (aesState.input.key.length < 16) aesState.input.key.push(0);
+            updateMatrixDisplay('key-matrix', aesState.input.key);
+        });
+    }
+    
+    // Set up listeners for matrix inputs
+    const matrixInputs = document.querySelectorAll('.matrix-input');
+    matrixInputs.forEach(input => {
+        input.addEventListener('input', () => {
+            const round = parseInt(input.getAttribute('data-round'));
+            const type = input.getAttribute('data-type');
+            handleMatrixInput(input, round, type);
+        });
+    });
+    
+    // Add round headers toggle functionality
+    const roundHeaders = document.querySelectorAll('.round-header');
+    roundHeaders.forEach(header => {
+        header.addEventListener('click', () => {
+            header.classList.toggle('active');
+            const content = header.nextElementSibling;
+            if (header.classList.contains('active')) {
+                content.style.display = 'block';
+                header.querySelector('div:last-child').textContent = '▼';
+            } else {
+                content.style.display = 'none';
+                header.querySelector('div:last-child').textContent = '▲';
+            }
+        });
+    });
+});
 
 // BLOCK 3 
 // UI Interaction functions with improved state synchronization
