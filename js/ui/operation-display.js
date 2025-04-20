@@ -32,7 +32,7 @@ function displayOperation(round, operation) {
   let description = "";
 
   // Get data and description based on operation
-  const roundIndex = round - 1;
+  const roundIndex = round;
 
   switch (operation) {
     case "addRoundKey":
@@ -340,7 +340,7 @@ function visualizeKeySchedule(round) {
 
 // Function to display a comparison between before/after states of an operation
 function displayOperationComparison(round, operation) {
-  const roundIndex = round - 1;
+  const roundIndex = round;
   let beforeData = [];
   let afterData = [];
   let keyData = []; // Store key data for debugging and display
