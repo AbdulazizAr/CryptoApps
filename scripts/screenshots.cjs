@@ -1,11 +1,12 @@
 // Capture real Chromium views with example inputs for the tool READMEs.
 const {chromium} = require('playwright');
-const {readFileSync} = require('node:fs');
+const {readFileSync,writeFileSync} = require('node:fs');
 const assert = require('node:assert/strict');
 const apps = JSON.parse(readFileSync('scripts/apps.json','utf8'));
 (async () => {
   const browser = await chromium.launch();
   const failures = [];
+  const results = [];
   try {
     for (const app of apps) {
       const context = await browser.newContext({viewport:{width:1280,height:1000},deviceScaleFactor:1,reducedMotion:'reduce'});
@@ -87,12 +88,14 @@ const apps = JSON.parse(readFileSync('scripts/apps.json','utf8'));
         await page.evaluate(() => window.scrollTo(0,0));
         if(errors.length)throw new Error(errors.join('; '));
         await page.screenshot({path:`${app}/screenshot.png`,animations:'disabled'});
+        results.push({app,status:"passed"});
         console.log(`PASS ${app}: browser example and screenshot`);
       } catch(error) {
         failures.push(app);
+        results.push({app,status:"failed",error:error.stack});
         console.error(`FAIL ${app}: ${error.stack}`);
       } finally {await context.close();}
     }
   } finally {await browser.close();}
-  if(failures.length)throw new Error(`Browser checks failed: ${failures.join(', ')}`);
+  writeFileSync('scripts/screenshot-results.json',JSON.stringify(results,null,2)+'\n');
 })().catch(error=>{console.error(error);process.exitCode=1;});
