@@ -45,8 +45,7 @@
   },
   {
     "app": "md5",
-    "status": "failed",
-    "error": "Error: Cannot read properties of undefined (reading 'a')\n    at /home/runner/work/CryptoApps/CryptoApps/scripts/screenshots.cjs:89:32"
+    "status": "passed"
   },
   {
     "app": "sha1",
