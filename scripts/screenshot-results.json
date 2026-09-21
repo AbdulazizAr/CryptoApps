@@ -1,0 +1,55 @@
+[
+  {
+    "app": "aes",
+    "status": "passed"
+  },
+  {
+    "app": "aes-key",
+    "status": "passed"
+  },
+  {
+    "app": "aes-operations",
+    "status": "passed"
+  },
+  {
+    "app": "des",
+    "status": "passed"
+  },
+  {
+    "app": "des-operations",
+    "status": "passed"
+  },
+  {
+    "app": "s-des",
+    "status": "passed"
+  },
+  {
+    "app": "caesar",
+    "status": "passed"
+  },
+  {
+    "app": "substitution",
+    "status": "passed"
+  },
+  {
+    "app": "vigenere",
+    "status": "passed"
+  },
+  {
+    "app": "one-time-pad",
+    "status": "passed"
+  },
+  {
+    "app": "hill",
+    "status": "passed"
+  },
+  {
+    "app": "md5",
+    "status": "failed",
+    "error": "Error: Cannot read properties of undefined (reading 'a')\n    at /home/runner/work/CryptoApps/CryptoApps/scripts/screenshots.cjs:89:32"
+  },
+  {
+    "app": "sha1",
+    "status": "passed"
+  }
+]
