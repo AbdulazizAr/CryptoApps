@@ -109,7 +109,7 @@ for (const algorithm of ['md5','sha1']) {
 }
 
 test('MD5 repeated calls clear prior multi-block history',()=>{
-  const h=page('md5');h.run(`calculateMD5('${'a'.repeat(120)}')`);h.run("calculateMD5('abc')");assert.equal(h.run('multiBlockHashes.length'),0);
+  const h=page('md5');assert.doesNotThrow(()=>h.run('displayInitialState()'));h.run(`calculateMD5('${'a'.repeat(120)}')`);h.run("calculateMD5('abc')");assert.equal(h.run('multiBlockHashes.length'),0);
 });
 
 test('Caesar encrypt, decrypt, shift recovery, negative/large shifts, validation',()=>{

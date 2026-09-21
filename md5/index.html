@@ -1655,6 +1655,7 @@ function updateCompressionDisplay(step) {
 
 // Update register values display
 function updateRegistersDisplay(step) {
+    if (!compressionStates.length) return;
     // Current and previous state
     const state = compressionStates[step];
     const prevState = step > 0 ? compressionStates[step - 1] : compressionStates[0];

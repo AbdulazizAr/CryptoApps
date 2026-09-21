@@ -82,7 +82,8 @@ const apps = JSON.parse(readFileSync('scripts/apps.json','utf8'));
           case 'md5':
           case 'sha1':
             await page.locator('#messageInput').fill('abc');
-            await page.evaluate(name => name==='md5'?calculateHash():handleCalculate(),app);
+            await page.locator('#calculateBtn').click();
+            assert.equal((await page.locator(app==='md5'?'#hashHex':'#hexOutput').textContent()).toLowerCase().replace(/\s/g,''),app==='md5'?'900150983cd24fb0d6963f7d28e17f72':'a9993e364706816aba3e25717850c26c9cd0d89d');
             break;
         }
         await page.evaluate(() => window.scrollTo(0,0));
