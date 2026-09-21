@@ -1,0 +1,2329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MD5 Algorithm Visualizer</title>
+    <style>
+        /* MD5 Algorithm Visualizer CSS */
+
+:root {
+    --primary-color: #3498db;
+    --secondary-color: #2ecc71;
+    --tertiary-color: #e74c3c;
+    --quaternary-color: #f39c12;
+    --round1-color: #3498db;
+    --round2-color: #9b59b6;
+    --round3-color: #e67e22;
+    --round4-color: #16a085;
+    --bg-color: #f8f9fa;
+    --border-color: #ddd;
+    --text-color: #333;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #2c3e50;
+}
+
+h2 {
+    margin: 20px 0 15px;
+    padding-bottom: 5px;
+    border-bottom: 2px solid var(--border-color);
+    color: #2c3e50;
+}
+
+h3 {
+    margin: 15px 0 10px;
+    color: #34495e;
+}
+
+.section {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.input-section { border-top: 5px solid var(--primary-color); }
+.padding-section { border-top: 5px solid var(--secondary-color); }
+.state-section { border-top: 5px solid var(--tertiary-color); }
+.compression-section { border-top: 5px solid var(--quaternary-color); }
+.output-section { border-top: 5px solid #16a085; }
+
+.input-group {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+label {
+    font-weight: bold;
+}
+
+input[type="text"] {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+button {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s;
+}
+
+button:hover {
+    background-color: #2980b9;
+}
+
+.error {
+    color: var(--tertiary-color);
+    margin-top: 5px;
+    font-size: 14px;
+}
+
+/* Input Formats */
+.input-formats {
+    margin-top: 20px;
+}
+
+.format-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 15px;
+}
+
+.format-tab {
+    padding: 8px 15px;
+    background: transparent;
+    color: var(--text-color);
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.format-tab:hover {
+    background-color: #f0f0f0;
+}
+
+.format-tab.active {
+    border-bottom: 2px solid var(--primary-color);
+    font-weight: bold;
+}
+
+.format-pane {
+    display: none;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    font-family: monospace;
+    white-space: pre-wrap;
+    word-break: break-all;
+    min-height: 100px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.format-pane.active {
+    display: block;
+}
+
+/* Padding Section */
+.info-row {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    gap: 20px;
+    margin: 10px 0;
+    align-items: start;
+}
+
+.info-label {
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.info-value {
+    font-family: monospace;
+    padding: 8px;
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+.padding-step {
+    margin: 5px 0;
+    padding: 5px;
+    border-radius: 4px;
+}
+
+.padding-step:nth-child(1) {
+    background-color: rgba(52, 152, 219, 0.1);
+}
+
+.padding-step:nth-child(2) {
+    background-color: rgba(46, 204, 113, 0.1);
+}
+
+.padding-step:nth-child(3) {
+    background-color: rgba(155, 89, 182, 0.1);
+}
+
+.info-summary {
+    margin-top: 15px;
+    padding: 10px;
+    background: #e8f5e9;
+    border-radius: 4px;
+    border-left: 4px solid var(--secondary-color);
+}
+
+/* Padded Message Display */
+.padded-blocks {
+    margin-top: 15px;
+}
+
+.padded-block {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #f0f0f0;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+}
+
+.block-header {
+    font-weight: bold;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.word-row {
+    display: grid;
+    grid-template-columns: 60px 100px 1fr;
+    gap: 10px;
+    margin: 5px 0;
+    padding: 5px;
+    background: white;
+    border-radius: 4px;
+    align-items: center;
+}
+
+.word-index, .word-hex {
+    font-family: monospace;
+    font-weight: bold;
+}
+
+.word-bin {
+    font-family: monospace;
+    word-break: break-all;
+    font-size: 0.9em;
+}
+
+.message-part { background-color: rgba(52, 152, 219, 0.1); }
+.padding-bit-part { background-color: rgba(231, 76, 60, 0.1); }
+.zeros-part { background-color: rgba(189, 195, 199, 0.1); }
+.length-part { background-color: rgba(155, 89, 182, 0.1); }
+
+/* Register Displays */
+.registers-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.register {
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+    text-align: center;
+}
+
+.register-label {
+    font-weight: bold;
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: #34495e;
+}
+
+.register-value {
+    font-family: monospace;
+    font-size: 16px;
+    padding: 5px;
+    background: #e8f5e9;
+    border-radius: 4px;
+    margin-bottom: 5px;
+}
+
+.register-binary {
+    font-family: monospace;
+    font-size: 12px;
+    word-break: break-all;
+    color: #7f8c8d;
+}
+
+/* Compression Controls */
+.compression-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin: 15px 0;
+    flex-wrap: wrap;
+}
+
+.step-navigation {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+}
+
+#stepSlider {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 8px;
+    background: var(--border-color);
+    border-radius: 4px;
+    outline: none;
+}
+
+#stepSlider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    background: var(--primary-color);
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.step-input {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+#stepInput {
+    width: 60px;
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    text-align: center;
+}
+
+#exportStepsBtn {
+    background-color: #9c27b0;
+}
+
+#exportStepsBtn:hover {
+    background-color: #7b1fa2;
+}
+
+/* Round Indicator */
+.round-indicator {
+    padding: 15px;
+    border-radius: 4px;
+    margin: 15px 0;
+    font-weight: bold;
+}
+
+#roundNumber {
+    font-size: 18px;
+    margin-bottom: 5px;
+}
+
+#roundFunction {
+    font-family: monospace;
+    font-size: 14px;
+}
+
+/* Round 1 */
+.round-indicator.round-1 {
+    background-color: rgba(52, 152, 219, 0.2);
+    border-left: 4px solid var(--round1-color);
+}
+
+/* Round 2 */
+.round-indicator.round-2 {
+    background-color: rgba(155, 89, 182, 0.2);
+    border-left: 4px solid var(--round2-color);
+}
+
+/* Round 3 */
+.round-indicator.round-3 {
+    background-color: rgba(230, 126, 34, 0.2);
+    border-left: 4px solid var(--round3-color);
+}
+
+/* Round 4 */
+.round-indicator.round-4 {
+    background-color: rgba(22, 160, 133, 0.2);
+    border-left: 4px solid var(--round4-color);
+}
+
+/* Step Details */
+.step-details {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin: 20px 0;
+}
+
+.step-registers, .step-calculation {
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+}
+
+.register-row {
+    display: grid;
+    grid-template-columns: 80px 1fr 1fr;
+    gap: 10px;
+    padding: 10px;
+    border-bottom: 1px solid var(--border-color);
+    align-items: center;
+}
+
+.register-row:last-child {
+    border-bottom: none;
+}
+
+.register-header {
+    font-weight: bold;
+    color: #34495e;
+}
+
+.register-name {
+    font-weight: bold;
+    color: #7f8c8d;
+}
+
+.register-before, .register-after, .register-initial, 
+.register-final, .register-result {
+    font-family: monospace;
+    padding: 5px;
+    background: #f0f0f0;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.register-after, .register-result {
+    background: #e8f5e9;
+    font-weight: bold;
+}
+
+/* Step Calculation */
+.calculation-row {
+    display: grid;
+    grid-template-columns: 150px 1fr auto;
+    gap: 10px;
+    margin: 10px 0;
+    align-items: center;
+}
+
+.calc-label {
+    font-weight: bold;
+    color: #34495e;
+}
+
+.calc-value {
+    font-family: monospace;
+    padding: 5px;
+    background: #f0f0f0;
+    border-radius: 4px;
+}
+
+.calc-index {
+    font-family: monospace;
+    color: #7f8c8d;
+    font-size: 0.9em;
+}
+
+.calculation-steps {
+    margin-top: 20px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-color);
+}
+
+.calc-step {
+    display: grid;
+    grid-template-columns: 150px 1fr;
+    gap: 10px;
+    margin: 10px 0;
+    padding: 8px;
+    background: #f9f9f9;
+    border-radius: 4px;
+    border-left: 3px solid #ddd;
+}
+
+.calc-step:nth-child(1) { border-left-color: #3498db; }
+.calc-step:nth-child(2) { border-left-color: #2ecc71; }
+.calc-step:nth-child(3) { border-left-color: #f39c12; }
+.calc-step:nth-child(4) { border-left-color: #9b59b6; }
+.calc-step:nth-child(5) { border-left-color: #e74c3c; }
+
+.step-name {
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.step-value {
+    font-family: monospace;
+    padding: 5px;
+    background: #f0f0f0;
+    border-radius: 4px;
+}
+
+/* Rounds Summary */
+.rounds-summary {
+    margin: 20px 0;
+}
+
+.rounds-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.rounds-table th, .rounds-table td {
+    padding: 10px;
+    text-align: left;
+    border: 1px solid var(--border-color);
+}
+
+.rounds-table th {
+    background-color: #f0f0f0;
+    font-weight: bold;
+}
+
+.rounds-table tr:nth-child(1) { background-color: rgba(52, 152, 219, 0.1); }
+.rounds-table tr:nth-child(2) { background-color: rgba(155, 89, 182, 0.1); }
+.rounds-table tr:nth-child(3) { background-color: rgba(230, 126, 34, 0.1); }
+.rounds-table tr:nth-child(4) { background-color: rgba(22, 160, 133, 0.1); }
+
+/* Final Hash Output */
+.final-calculation {
+    margin-bottom: 20px;
+}
+
+.final-registers {
+    margin-top: 15px;
+}
+
+.register-row {
+    display: grid;
+    grid-template-columns: 80px repeat(3, 1fr);
+    gap: 10px;
+    padding: 10px;
+    border-bottom: 1px solid var(--border-color);
+    align-items: center;
+}
+
+.hash-output {
+    margin-top: 20px;
+}
+
+.hash-format {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin: 10px 0;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+.format-label {
+    font-weight: bold;
+    min-width: 80px;
+}
+
+.format-value {
+    font-family: monospace;
+    padding: 8px;
+    background: #f0f0f0;
+    border-radius: 4px;
+    flex: 1;
+}
+
+.copy-btn {
+    background-color: #7f8c8d;
+    white-space: nowrap;
+}
+
+.copy-btn:hover {
+    background-color: #6d7b7c;
+}
+
+/* Multiple Block Processing */
+.multi-block-info {
+    margin-top: 15px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+}
+
+.block-processing {
+    margin: 10px 0;
+    padding: 10px;
+    background: #f0f0f0;
+    border-radius: 4px;
+}
+
+.block-header {
+    font-weight: bold;
+    color: #34495e;
+    margin-bottom: 10px;
+}
+
+.block-registers {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+
+.block-register {
+    padding: 8px;
+    background: white;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.block-register-name {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.block-register-value {
+    font-family: monospace;
+    font-size: 0.9em;
+}
+
+/* Notification */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: var(--secondary-color);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 4px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    transform: translateY(-100px);
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+.notification.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 992px) {
+    .step-details {
+        grid-template-columns: 1fr;
+    }
+    
+    .register-row,
+    .register-row.final-registers {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .register-header:nth-child(1),
+    .register-name {
+        grid-column: 1 / -1;
+        text-align: center;
+        background: #f0f0f0;
+        border-radius: 4px;
+        margin-bottom: 5px;
+    }
+    
+    .calculation-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .calc-label {
+        margin-bottom: 5px;
+    }
+    
+    .calc-index {
+        justify-self: flex-start;
+    }
+}
+
+@media (max-width: 768px) {
+    .input-group {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+    
+    .compression-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .step-navigation {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    #stepSlider {
+        width: 100%;
+    }
+    
+    .hash-format {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .block-registers {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Highlight Changes */
+.highlight-change {
+    position: relative;
+    animation: highlightFade 1.5s ease-in-out;
+}
+
+@keyframes highlightFade {
+    0% { background-color: rgba(46, 204, 113, 0.5); }
+    100% { background-color: transparent; }
+}
+    </style> 
+</head>
+<body>
+<nav style="margin: 0 0 20px; font: 14px system-ui"><a href="../index.html">← All CryptoApps</a> · Educational use only</nav>
+    <h1>MD5 Algorithm Visualizer</h1>
+    
+    <!-- Input Section -->
+    <div class="section input-section">
+        <h2>1. Input Message</h2>
+        <div class="input-group">
+            <label for="messageInput">Enter Message:</label>
+            <input type="text" id="messageInput" placeholder="e.g., abc">
+            <button id="calculateBtn">Calculate MD5</button>
+        </div>
+        <div id="inputError" class="error"></div>
+        
+        <div class="input-formats">
+            <h3>Message Formats</h3>
+            <div class="format-tabs">
+                <button class="format-tab active" data-format="ascii">ASCII</button>
+                <button class="format-tab" data-format="hex">Hex</button>
+                <button class="format-tab" data-format="binary">Binary</button>
+            </div>
+            <div class="format-content">
+                <div id="asciiFormat" class="format-pane active"></div>
+                <div id="hexFormat" class="format-pane"></div>
+                <div id="binaryFormat" class="format-pane"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Padding Section -->
+    <div class="section padding-section">
+        <h2>2. Message Padding (Little Endian)</h2>
+        <div class="padding-info">
+            <div class="info-row">
+                <div class="info-label">Original Message Length:</div>
+                <div id="lengthDisplay" class="info-value"></div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Padding Process:</div>
+                <div id="paddingDisplay" class="info-value">
+                    <div class="padding-step">1. Append a single '1' bit (10000000)</div>
+                    <div class="padding-step">2. Add '0's until length ≡ 448 mod 512 (<span id="zeroPadding"></span> bits)</div>
+                    <div class="padding-step">3. Append 64-bit little-endian length: <span id="lengthField"></span></div>
+                </div>
+            </div>
+            <div class="info-summary">
+                <div id="paddingSummary" class="info-value"></div>
+            </div>
+        </div>
+        
+        <div class="padded-message">
+            <h3>Padded Message Blocks</h3>
+            <div id="paddedBlocks" class="padded-blocks"></div>
+        </div>
+    </div>
+    
+    <!-- Initial State Section -->
+    <div class="section state-section">
+        <h2>3. Initial State Setup</h2>
+        <div class="registers-container">
+            <div class="register">
+                <div class="register-label">A</div>
+                <div class="register-value" id="initialA">67452301</div>
+                <div class="register-binary" id="initialABinary"></div>
+            </div>
+            <div class="register">
+                <div class="register-label">B</div>
+                <div class="register-value" id="initialB">EFCDAB89</div>
+                <div class="register-binary" id="initialBBinary"></div>
+            </div>
+            <div class="register">
+                <div class="register-label">C</div>
+                <div class="register-value" id="initialC">98BADCFE</div>
+                <div class="register-binary" id="initialCBinary"></div>
+            </div>
+            <div class="register">
+                <div class="register-label">D</div>
+                <div class="register-value" id="initialD">10325476</div>
+                <div class="register-binary" id="initialDBinary"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Compression Loop Section -->
+    <div class="section compression-section">
+        <h2>4. Main Compression Loop (64 Steps)</h2>
+        <div class="compression-controls">
+            <div class="step-navigation">
+                <input type="range" id="stepSlider" min="0" max="64" value="0">
+                <span id="currentStep">Step: 0</span>
+                <button id="playPauseBtn">Play</button>
+            </div>
+            <div class="step-input">
+                <input type="number" id="stepInput" min="0" max="63" placeholder="Jump to step">
+                <button id="goToStepBtn">Go</button>
+            </div>
+            <button id="exportStepsBtn">Export All Steps</button>
+        </div>
+        
+        <div class="round-indicator">
+            <div id="roundNumber">Round 1 (Steps 0-15)</div>
+            <div id="roundFunction">Function: F(x,y,z) = (x & y) | (~x & z)</div>
+        </div>
+        
+        <div class="step-details">
+            <div class="step-registers">
+                <div class="register-row">
+                    <div class="register-header">Register</div>
+                    <div class="register-header">Before</div>
+                    <div class="register-header">After</div>
+                </div>
+                <div class="register-row">
+                    <div class="register-name">A</div>
+                    <div class="register-before" id="beforeA">67452301</div>
+                    <div class="register-after" id="afterA">67452301</div>
+                </div>
+                <div class="register-row">
+                    <div class="register-name">B</div>
+                    <div class="register-before" id="beforeB">EFCDAB89</div>
+                    <div class="register-after" id="afterB">EFCDAB89</div>
+                </div>
+                <div class="register-row">
+                    <div class="register-name">C</div>
+                    <div class="register-before" id="beforeC">98BADCFE</div>
+                    <div class="register-after" id="afterC">98BADCFE</div>
+                </div>
+                <div class="register-row">
+                    <div class="register-name">D</div>
+                    <div class="register-before" id="beforeD">10325476</div>
+                    <div class="register-after" id="afterD">10325476</div>
+                </div>
+            </div>
+            
+            <div class="step-calculation">
+                <h3>Step Calculation</h3>
+                <div class="calculation-row">
+                    <div class="calc-label">Message Word X[k]:</div>
+                    <div id="messageWord" class="calc-value">00000000</div>
+                    <div id="messageWordIndex" class="calc-index">k = 0</div>
+                </div>
+                <div class="calculation-row">
+                    <div class="calc-label">Constant T[i]:</div>
+                    <div id="constantValue" class="calc-value">D76AA478</div>
+                </div>
+                <div class="calculation-row">
+                    <div class="calc-label">Shift Amount s:</div>
+                    <div id="shiftAmount" class="calc-value">7</div>
+                </div>
+                <div class="calculation-row">
+                    <div class="calc-label">F(B,C,D):</div>
+                    <div id="functionResult" class="calc-value">00000000</div>
+                </div>
+                
+                <div class="calculation-steps">
+                    <div class="calc-step">
+                        <div class="step-name">A + F(B,C,D)</div>
+                        <div id="stepValueF" class="step-value">00000000</div>
+                    </div>
+                    <div class="calc-step">
+                        <div class="step-name">+ X[k]</div>
+                        <div id="stepValueX" class="step-value">00000000</div>
+                    </div>
+                    <div class="calc-step">
+                        <div class="step-name">+ T[i]</div>
+                        <div id="stepValueT" class="step-value">00000000</div>
+                    </div>
+                    <div class="calc-step">
+                        <div class="step-name">Rotate Left by s</div>
+                        <div id="stepValueRotate" class="step-value">00000000</div>
+                    </div>
+                    <div class="calc-step">
+                        <div class="step-name">+ B</div>
+                        <div id="stepValueFinal" class="step-value">00000000</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="rounds-summary">
+            <h3>Rounds Summary</h3>
+            <table class="rounds-table">
+                <thead>
+                    <tr>
+                        <th>Round</th>
+                        <th>Steps</th>
+                        <th>Function</th>
+                        <th>Word Index (k)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>0-15</td>
+                        <td>F(B,C,D) = (B & C) | (~B & D)</td>
+                        <td>k = i</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>16-31</td>
+                        <td>G(B,C,D) = (D & B) | (~D & C)</td>
+                        <td>k = (5×i + 1) mod 16</td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>32-47</td>
+                        <td>H(B,C,D) = B ^ C ^ D</td>
+                        <td>k = (3×i + 5) mod 16</td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td>48-63</td>
+                        <td>I(B,C,D) = C ^ (B | ~D)</td>
+                        <td>k = (7×i) mod 16</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Final Hash Section -->
+    <div class="section output-section">
+        <h2>5. Final Hash Output</h2>
+        <div class="final-calculation">
+            <h3>Adding Initial State to Final State</h3>
+            <div class="final-registers">
+                <div class="register-row">
+                    <div class="register-header">Register</div>
+                    <div class="register-header">Initial</div>
+                    <div class="register-header">Final</div>
+                    <div class="register-header">Result</div>
+                </div>
+                <div class="register-row">
+                    <div class="register-name">A</div>
+                    <div id="finalInitialA" class="register-initial">67452301</div>
+                    <div id="finalComputedA" class="register-final">00000000</div>
+                    <div id="finalResultA" class="register-result">00000000</div>
+                </div>
+                <div class="register-row">
+                    <div class="register-name">B</div>
+                    <div id="finalInitialB" class="register-initial">EFCDAB89</div>
+                    <div id="finalComputedB" class="register-final">00000000</div>
+                    <div id="finalResultB" class="register-result">00000000</div>
+                </div>
+                <div class="register-row">
+                    <div class="register-name">C</div>
+                    <div id="finalInitialC" class="register-initial">98BADCFE</div>
+                    <div id="finalComputedC" class="register-final">00000000</div>
+                    <div id="finalResultC" class="register-result">00000000</div>
+                </div>
+                <div class="register-row">
+                    <div class="register-name">D</div>
+                    <div id="finalInitialD" class="register-initial">10325476</div>
+                    <div id="finalComputedD" class="register-final">00000000</div>
+                    <div id="finalResultD" class="register-result">00000000</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="hash-output">
+            <h3>MD5 Hash (Little Endian Output)</h3>
+            <div class="hash-format">
+                <div class="format-label">Hex:</div>
+                <div id="hashHex" class="format-value"></div>
+                <button id="copyHexBtn" class="copy-btn">Copy</button>
+            </div>
+            <div class="hash-format">
+                <div class="format-label">Bytes:</div>
+                <div id="hashBytes" class="format-value"></div>
+            </div>
+            <div class="hash-format">
+                <div class="format-label">Base64:</div>
+                <div id="hashBase64" class="format-value"></div>
+                <button id="copyBase64Btn" class="copy-btn">Copy</button>
+            </div>
+        </div>
+        
+        <div class="multi-block-results">
+            <h3>Multiple Block Processing</h3>
+            <div id="multiBlockInfo" class="multi-block-info"></div>
+        </div>
+    </div>
+    
+    <div id="notification" class="notification">Copied to clipboard!</div>
+    
+    <script> 
+// MD5 Visualizer - Part 1: Constants and Global Variables
+
+// MD5 Initial Values (Little Endian)
+const MD5_INIT_A = 0x67452301;
+const MD5_INIT_B = 0xEFCDAB89;
+const MD5_INIT_C = 0x98BADCFE;
+const MD5_INIT_D = 0x10325476;
+
+// Per-round shift amounts
+const MD5_SHIFTS = [
+    7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22, // Round 1
+    5, 9, 14, 20, 5, 9, 14, 20, 5, 9, 14, 20, 5, 9, 14, 20,     // Round 2
+    4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23, // Round 3
+    6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21  // Round 4
+];
+
+// Precomputed constants (T[i] = floor(2^32 * abs(sin(i + 1))))
+const MD5_CONSTANTS = [
+    0xd76aa478, 0xe8c7b756, 0x242070db, 0xc1bdceee, 0xf57c0faf, 0x4787c62a, 0xa8304613, 0xfd469501,
+    0x698098d8, 0x8b44f7af, 0xffff5bb1, 0x895cd7be, 0x6b901122, 0xfd987193, 0xa679438e, 0x49b40821,
+    0xf61e2562, 0xc040b340, 0x265e5a51, 0xe9b6c7aa, 0xd62f105d, 0x02441453, 0xd8a1e681, 0xe7d3fbc8,
+    0x21e1cde6, 0xc33707d6, 0xf4d50d87, 0x455a14ed, 0xa9e3e905, 0xfcefa3f8, 0x676f02d9, 0x8d2a4c8a,
+    0xfffa3942, 0x8771f681, 0x6d9d6122, 0xfde5380c, 0xa4beea44, 0x4bdecfa9, 0xf6bb4b60, 0xbebfbc70,
+    0x289b7ec6, 0xeaa127fa, 0xd4ef3085, 0x04881d05, 0xd9d4d039, 0xe6db99e5, 0x1fa27cf8, 0xc4ac5665,
+    0xf4292244, 0x432aff97, 0xab9423a7, 0xfc93a039, 0x655b59c3, 0x8f0ccc92, 0xffeff47d, 0x85845dd1,
+    0x6fa87e4f, 0xfe2ce6e0, 0xa3014314, 0x4e0811a1, 0xf7537e82, 0xbd3af235, 0x2ad7d2bb, 0xeb86d391
+];
+
+// Round functions
+const MD5_ROUND_FUNCTIONS = [
+    {
+        name: "F",
+        formula: "(B & C) | (~B & D)",
+        func: (b, c, d) => (b & c) | ((~b) & d)
+    },
+    {
+        name: "G",
+        formula: "(D & B) | (~D & C)",
+        func: (b, c, d) => (d & b) | ((~d) & c)
+    },
+    {
+        name: "H",
+        formula: "B ^ C ^ D",
+        func: (b, c, d) => b ^ c ^ d
+    },
+    {
+        name: "I",
+        formula: "C ^ (B | ~D)",
+        func: (b, c, d) => c ^ (b | (~d))
+    }
+];
+
+// Round indexing functions (to get k for each round)
+const MD5_INDEX_FUNCTIONS = [
+    i => i,                    // Round 1: k = i
+    i => (5 * i + 1) % 16,     // Round 2: k = (5*i + 1) mod 16
+    i => (3 * i + 5) % 16,     // Round 3: k = (3*i + 5) mod 16
+    i => (7 * i) % 16          // Round 4: k = (7*i) mod 16
+];
+
+// Global variables
+let currentMessage = "";
+let paddedMessage = [];
+let messageWords = [];
+let compressionStates = [];
+let currentStep = 0;
+let isPlaying = false;
+let animationInterval = null;
+let multiBlockHashes = [];
+
+// MD5 hash state
+let hashState = {
+    a: MD5_INIT_A,
+    b: MD5_INIT_B,
+    c: MD5_INIT_C,
+    d: MD5_INIT_D
+};
+// MD5 Visualizer - Part 2: Utility Functions
+
+// Convert string to UTF-8 byte array
+function stringToBytes(str) {
+    const encoder = new TextEncoder();
+    return encoder.encode(str);
+}
+
+// Left rotate function (32-bit)
+function rotateLeft(x, n) {
+    return ((x << n) | (x >>> (32 - n))) >>> 0;
+}
+
+// Convert byte to binary string
+function byteToBinary(byte) {
+    return byte.toString(2).padStart(8, '0');
+}
+
+// Convert array of bytes to binary string
+function bytesToBinary(bytes) {
+    return Array.from(bytes).map(byte => byteToBinary(byte)).join('');
+}
+
+// Convert array of bytes to hex string
+function bytesToHex(bytes) {
+    return Array.from(bytes).map(byte => byte.toString(16).padStart(2, '0')).join('');
+}
+
+// Convert integer to hex string (with padding)
+function toHex(num) {
+    return num.toString(16).padStart(8, '0').toLowerCase();
+}
+
+// Convert integer to binary string (32-bit)
+function toBinary(num) {
+    return num.toString(2).padStart(32, '0');
+}
+
+// Little-endian conversion: Convert 4 bytes to 32-bit word
+function bytesToWord(bytes, offset = 0) {
+    return (
+        (bytes[offset] & 0xFF) |
+        ((bytes[offset + 1] & 0xFF) << 8) |
+        ((bytes[offset + 2] & 0xFF) << 16) |
+        ((bytes[offset + 3] & 0xFF) << 24)
+    ) >>> 0;
+}
+
+// Little-endian conversion: Convert 32-bit word to 4 bytes
+function wordToBytes(word) {
+    return [
+        word & 0xFF,
+        (word >> 8) & 0xFF,
+        (word >> 16) & 0xFF,
+        (word >> 24) & 0xFF
+    ];
+}
+
+// Convert array of bytes to base64
+function bytesToBase64(bytes) {
+    let binary = '';
+    for (let i = 0; i < bytes.length; i++) {
+        binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
+}
+
+// Show notification
+function showNotification(message) {
+    const notification = document.getElementById('notification');
+    notification.textContent = message;
+    notification.classList.add('show');
+    
+    setTimeout(() => {
+        notification.classList.remove('show');
+    }, 2000);
+}
+
+// Copy to clipboard
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text)
+        .then(() => showNotification('Copied to clipboard!'))
+        .catch(() => showNotification('Failed to copy. Try again.'));
+}
+
+// Format binary for display (readable with spaces)
+function formatBinary(bin) {
+    // Add spaces for readability - groups of 8 bits
+    return bin.replace(/(.{8})/g, "$1 ").trim();
+}
+
+// Format hex for display (readable with spaces)
+function formatHex(hex) {
+    // Add spaces for readability - groups of 2 bytes (4 hex chars)
+    return hex.replace(/(.{4})/g, "$1 ").trim();
+}
+
+// Determine which round a step is in
+function getRoundForStep(step) {
+    if (step < 16) return 1;
+    if (step < 32) return 2;
+    if (step < 48) return 3;
+    return 4;
+}
+
+// Get word index for a specific step
+function getWordIndex(step) {
+    const round = Math.floor(step / 16);
+    return MD5_INDEX_FUNCTIONS[round](step % 16);
+}
+
+// Reset UI elements
+function resetUI() {
+    // Clear displays
+    document.getElementById('asciiFormat').textContent = '';
+    document.getElementById('hexFormat').textContent = '';
+    document.getElementById('binaryFormat').textContent = '';
+    document.getElementById('lengthDisplay').textContent = '';
+    document.getElementById('zeroPadding').textContent = '';
+    document.getElementById('lengthField').textContent = '';
+    document.getElementById('paddingSummary').textContent = '';
+    document.getElementById('paddedBlocks').innerHTML = '';
+    document.getElementById('hashHex').textContent = '';
+    document.getElementById('hashBytes').textContent = '';
+    document.getElementById('hashBase64').textContent = '';
+    document.getElementById('multiBlockInfo').innerHTML = '';
+    
+    // Reset animation
+    currentStep = 0;
+    document.getElementById('stepSlider').value = 0;
+    document.getElementById('currentStep').textContent = 'Step: 0';
+    
+    // Stop animation if it's running
+    if (animationInterval) {
+        clearInterval(animationInterval);
+        animationInterval = null;
+        isPlaying = false;
+        document.getElementById('playPauseBtn').textContent = 'Play';
+    }
+}
+// MD5 Visualizer - Part 3: Core MD5 Functions
+
+// Pad the message according to MD5 specification (Little-Endian)
+function padMessage(messageBytes) {
+    // Calculate original message length in bits
+    const originalLengthBits = messageBytes.length * 8;
+    
+    // Calculate how many padding bits are needed
+    // We need: originalLength + 1 + paddingZeros + 64 ≡ 0 mod 512
+    const paddingBits = 512 - ((originalLengthBits + 1 + 64) % 512 || 512);
+    
+    // Calculate total padded length in bytes
+    const paddedLengthBytes = Math.ceil((originalLengthBits + 1 + paddingBits + 64) / 8);
+    
+    // Create padded array
+    const paddedBytes = new Uint8Array(paddedLengthBytes);
+    
+    // Copy original message
+    paddedBytes.set(messageBytes);
+    
+    // Append '1' bit (0x80 = 10000000)
+    paddedBytes[messageBytes.length] = 0x80;
+    
+    // Append original length as 64-bit little-endian integer
+    // Note: JavaScript bitwise operations are on 32 bits, so we handle as two 32-bit values
+    const lowBits = originalLengthBits & 0xFFFFFFFF;
+    const highBits = 0; // For messages < 2^32 bits, high bits are 0
+    
+    // Write length in little-endian format (8 bytes)
+    const lengthPos = paddedBytes.length - 8;
+    
+    // Low bits first (little-endian)
+    paddedBytes[lengthPos] = lowBits & 0xFF;
+    paddedBytes[lengthPos + 1] = (lowBits >> 8) & 0xFF;
+    paddedBytes[lengthPos + 2] = (lowBits >> 16) & 0xFF;
+    paddedBytes[lengthPos + 3] = (lowBits >> 24) & 0xFF;
+    
+    // Then high bits (all zeros for small messages)
+    paddedBytes[lengthPos + 4] = highBits & 0xFF;
+    paddedBytes[lengthPos + 5] = (highBits >> 8) & 0xFF;
+    paddedBytes[lengthPos + 6] = (highBits >> 16) & 0xFF;
+    paddedBytes[lengthPos + 7] = (highBits >> 24) & 0xFF;
+    
+    return {
+        paddedBytes,
+        paddingInfo: {
+            originalLengthBits,
+            paddingBits,
+            paddedLengthBytes
+        }
+    };
+}
+
+// Convert padded message to 16 words (32-bit integers) per block
+function messageToWords(paddedBytes) {
+    const words = [];
+    
+    // Each block has 16 words (64 bytes)
+    for (let i = 0; i < paddedBytes.length; i += 4) {
+        // Convert 4 bytes to a word using little-endian order
+        const word = bytesToWord(paddedBytes, i);
+        words.push(word);
+    }
+    
+    return words;
+}
+
+// Compress a single 16-word (512-bit) block
+function compressBlock(words, initialState = null) {
+    // Initialize state
+    let a = initialState ? initialState.a : MD5_INIT_A;
+    let b = initialState ? initialState.b : MD5_INIT_B;
+    let c = initialState ? initialState.c : MD5_INIT_C;
+    let d = initialState ? initialState.d : MD5_INIT_D;
+    
+    // Save initial state for later
+    const initialA = a;
+    const initialB = b;
+    const initialC = c;
+    const initialD = d;
+    
+    // Record states for visualization
+    const states = [{
+        step: -1,
+        a,
+        b,
+        c,
+        d,
+        f: 0,
+        k: 0,
+        word: 0,
+        s: 0,
+        temp: 0,
+        round: 0
+    }];
+    
+    // Process all 64 steps
+    for (let i = 0; i < 64; i++) {
+        // Determine which round we're in (0-3)
+        const round = Math.floor(i / 16);
+        
+        // Get round function, word index and shift amount
+        const roundFunc = MD5_ROUND_FUNCTIONS[round];
+        const wordIndex = MD5_INDEX_FUNCTIONS[round](i % 16);
+        const shiftAmount = MD5_SHIFTS[i];
+        
+        // Calculate F(b,c,d)
+        const f = roundFunc.func(b, c, d);
+        
+        // Calculate the word and constant for this step
+        const word = words[wordIndex];
+        const constant = MD5_CONSTANTS[i];
+        
+        // Store values for each calculation step
+        const oldA = a;
+        const temp1 = (a + f) >>> 0;
+        const temp2 = (temp1 + word) >>> 0;
+        const temp3 = (temp2 + constant) >>> 0;
+        const temp4 = rotateLeft(temp3, shiftAmount);
+        const temp5 = (temp4 + b) >>> 0;
+        
+        // Perform the step calculation
+        a = temp5;
+        
+        // Rotate values
+        [a, b, c, d] = [a, b, c, d];  // Current values
+        [a, b, c, d] = [d, a, b, c];  // Rotate
+        
+        // Store state for visualization
+        states.push({
+            step: i,
+            a: a,
+            b: b,
+            c: c,
+            d: d,
+            f: f,
+            wordIndex: wordIndex,
+            word: word,
+            constant: constant,
+            s: shiftAmount,
+            oldA: oldA,
+            temp1: temp1,
+            temp2: temp2,
+            temp3: temp3,
+            temp4: temp4,
+            temp5: temp5,
+            round: round
+        });
+    }
+    
+    // Add initial values
+    a = (a + initialA) >>> 0;
+    b = (b + initialB) >>> 0;
+    c = (c + initialC) >>> 0;
+    d = (d + initialD) >>> 0;
+    
+    return {
+        state: { a, b, c, d },
+        initial: { a: initialA, b: initialB, c: initialC, d: initialD },
+        states: states
+    };
+}
+
+// Main MD5 algorithm
+function calculateMD5(message) {
+    multiBlockHashes = [];
+    // Reset state
+    const initialState = {
+        a: MD5_INIT_A,
+        b: MD5_INIT_B,
+        c: MD5_INIT_C,
+        d: MD5_INIT_D
+    };
+    
+    // Convert to bytes and pad
+    const messageBytes = stringToBytes(message);
+    const { paddedBytes, paddingInfo } = padMessage(messageBytes);
+    
+    // Store for visualization
+    paddedMessage = paddedBytes;
+    
+    // Break message into 512-bit blocks
+    const blockCount = paddedBytes.length / 64;
+    const blocks = [];
+    const blockStates = [];
+    let currentState = { ...initialState }; // Start with initial values
+    
+    // Process each block
+    for (let i = 0; i < blockCount; i++) {
+        // Extract 16 words (64 bytes) for this block
+        const blockWords = [];
+        for (let j = 0; j < 16; j++) {
+            const wordOffset = i * 64 + j * 4;
+            blockWords.push(bytesToWord(paddedBytes, wordOffset));
+        }
+        
+        blocks.push(blockWords);
+        
+        // Process this block
+        const result = compressBlock(blockWords, currentState);
+        blockStates.push(result);
+        
+        // Update current state for next block
+        currentState = result.state;
+        
+        // Store intermediate hash for multiple blocks
+        if (blockCount > 1) {
+            multiBlockHashes.push({
+                blockIndex: i,
+                state: { ...result.state }
+            });
+        }
+    }
+    
+    // Final hash state
+    hashState = currentState;
+    
+    // Convert to bytes (little-endian)
+    const resultBytes = [
+        ...wordToBytes(hashState.a),
+        ...wordToBytes(hashState.b),
+        ...wordToBytes(hashState.c),
+        ...wordToBytes(hashState.d)
+    ];
+    
+    // Store compression states for visualization
+    compressionStates = blockStates[0].states;
+    
+    // Store message words for visualization
+    messageWords = blocks[0];
+    
+    return {
+        hash: resultBytes,
+        hexHash: bytesToHex(resultBytes),
+        messageBytes,
+        paddedBytes,
+        paddingInfo,
+        blocks,
+        blockStates,
+        finalState: hashState
+    };
+}
+// MD5 Visualizer - Part 4: Display Functions
+
+// Display input message in different formats
+function displayInputFormats(messageBytes) {
+    // Display ASCII representation
+    const asciiDisplay = currentMessage;
+    document.getElementById('asciiFormat').textContent = asciiDisplay;
+    
+    // Display hex representation
+    const hexDisplay = bytesToHex(messageBytes);
+    document.getElementById('hexFormat').textContent = formatHex(hexDisplay);
+    
+    // Display binary representation
+    const binaryDisplay = bytesToBinary(messageBytes);
+    document.getElementById('binaryFormat').textContent = formatBinary(binaryDisplay);
+}
+
+// Display padding information
+function displayPaddingInfo(messageBytes, paddedBytes, paddingInfo) {
+    // Display original message length
+    document.getElementById('lengthDisplay').textContent = 
+        `${paddingInfo.originalLengthBits} bits (${messageBytes.length} bytes)`;
+    
+    // Display padding zeros
+    document.getElementById('zeroPadding').textContent = paddingInfo.paddingBits;
+    
+    // Display length field
+    const lengthField = paddingInfo.originalLengthBits;
+    document.getElementById('lengthField').textContent = lengthField.toString();
+    
+    // Display padding summary
+    document.getElementById('paddingSummary').innerHTML = `
+        <b>Original Message:</b> ${paddingInfo.originalLengthBits} bits<br>
+        <b>Padding Added:</b> 1 bit + ${paddingInfo.paddingBits} zero bits + 64-bit length field<br>
+        <b>Total Length:</b> ${paddingInfo.paddedLengthBytes * 8} bits (${paddingInfo.paddedLengthBytes} bytes)<br>
+        <b>512-bit Blocks:</b> ${paddingInfo.paddedLengthBytes / 64}
+    `;
+    
+    // Display padded message blocks
+    displayPaddedBlocks(messageBytes, paddedBytes);
+}
+
+// Display padded message blocks
+function displayPaddedBlocks(messageBytes, paddedBytes) {
+    const blocksContainer = document.getElementById('paddedBlocks');
+    blocksContainer.innerHTML = '';
+    
+    // Calculate number of blocks
+    const blockCount = paddedBytes.length / 64;
+    
+    // Get offset where padding starts
+    const paddingStart = messageBytes.length;
+    
+    // Get offset where length field starts
+    const lengthFieldStart = paddedBytes.length - 8;
+    
+    // For each block
+    for (let blockIndex = 0; blockIndex < blockCount; blockIndex++) {
+        const blockDiv = document.createElement('div');
+        blockDiv.className = 'padded-block';
+        
+        const blockHeader = document.createElement('div');
+        blockHeader.className = 'block-header';
+        blockHeader.textContent = `Block ${blockIndex + 1} (Words 0-15)`;
+        blockDiv.appendChild(blockHeader);
+        
+        // For each word in the block
+        for (let wordIndex = 0; wordIndex < 16; wordIndex++) {
+            const wordOffset = blockIndex * 64 + wordIndex * 4;
+            const word = bytesToWord(paddedBytes, wordOffset);
+            
+            const wordRow = document.createElement('div');
+            wordRow.className = 'word-row';
+            
+            // Determine if this word is part of the original message, padding, or length field
+            let wordType = '';
+            if (wordOffset >= lengthFieldStart) {
+                wordType = 'length-part';
+            } else if (wordOffset >= paddingStart) {
+                // First padding byte contains the 1-bit
+                if (wordOffset === paddingStart) {
+                    wordType = 'padding-bit-part';
+                } else {
+                    wordType = 'zeros-part';
+                }
+            } else {
+                wordType = 'message-part';
+            }
+            
+            wordRow.classList.add(wordType);
+            
+            // Word index
+            const indexDiv = document.createElement('div');
+            indexDiv.className = 'word-index';
+            indexDiv.textContent = `W[${wordIndex}]`;
+            wordRow.appendChild(indexDiv);
+            
+            // Word in hex
+            const hexDiv = document.createElement('div');
+            hexDiv.className = 'word-hex';
+            hexDiv.textContent = toHex(word);
+            wordRow.appendChild(hexDiv);
+            
+            // Word in binary
+            const binDiv = document.createElement('div');
+            binDiv.className = 'word-bin';
+            binDiv.textContent = formatBinary(toBinary(word));
+            wordRow.appendChild(binDiv);
+            
+            blockDiv.appendChild(wordRow);
+        }
+        
+        blocksContainer.appendChild(blockDiv);
+    }
+}
+
+// Display initial state
+function displayInitialState() {
+    // Display initial values
+    document.getElementById('initialA').textContent = toHex(MD5_INIT_A);
+    document.getElementById('initialB').textContent = toHex(MD5_INIT_B);
+    document.getElementById('initialC').textContent = toHex(MD5_INIT_C);
+    document.getElementById('initialD').textContent = toHex(MD5_INIT_D);
+    
+    // Display binary representations
+    document.getElementById('initialABinary').textContent = formatBinary(toBinary(MD5_INIT_A));
+    document.getElementById('initialBBinary').textContent = formatBinary(toBinary(MD5_INIT_B));
+    document.getElementById('initialCBinary').textContent = formatBinary(toBinary(MD5_INIT_C));
+    document.getElementById('initialDBinary').textContent = formatBinary(toBinary(MD5_INIT_D));
+    
+    // Initialize registers display for step 0
+    updateRegistersDisplay(0);
+}
+
+// Update compression display for a given step
+function updateCompressionDisplay(step) {
+    // Get state information for current step
+    const state = compressionStates[step];
+    
+    // Reset all highlights
+    document.querySelectorAll('.highlight-change').forEach(el => {
+        el.classList.remove('highlight-change');
+    });
+    
+    // If step is 0, we're just showing initial state
+    if (step === 0) {
+        document.getElementById('roundNumber').textContent = 'Initial State';
+        document.getElementById('roundFunction').textContent = 'No operation performed yet';
+        
+        document.querySelectorAll('.calculation-row, .calculation-steps, .calc-step').forEach(el => {
+            el.style.opacity = '0.5';
+        });
+        
+        return;
+    } else {
+        document.querySelectorAll('.calculation-row, .calculation-steps, .calc-step').forEach(el => {
+            el.style.opacity = '1';
+        });
+    }
+    
+    // Calculate actual step (0-indexed in compressionStates, but 1-indexed in UI)
+    const actualStep = step - 1;
+    
+    // Determine round
+    const round = Math.floor(actualStep / 16);
+    const roundName = ['Round 1', 'Round 2', 'Round 3', 'Round 4'][round];
+    const stepRange = [`0-15`, `16-31`, `32-47`, `48-63`][round];
+    
+    // Update round indicator
+    document.getElementById('roundNumber').textContent = `${roundName} (Steps ${stepRange})`;
+    document.getElementById('roundFunction').textContent = `Function: ${MD5_ROUND_FUNCTIONS[round].name}(B,C,D) = ${MD5_ROUND_FUNCTIONS[round].formula}`;
+    
+    // Add correct round class to round indicator
+    document.querySelector('.round-indicator').className = 'round-indicator';
+    document.querySelector('.round-indicator').classList.add(`round-${round + 1}`);
+    
+    // Update registers display
+    updateRegistersDisplay(step);
+    
+    // Update calculation display
+    updateCalculationDisplay(state);
+}
+
+// Update register values display
+function updateRegistersDisplay(step) {
+    // Current and previous state
+    const state = compressionStates[step];
+    const prevState = step > 0 ? compressionStates[step - 1] : compressionStates[0];
+    
+    // Update register values
+    document.getElementById('beforeA').textContent = toHex(prevState.a);
+    document.getElementById('beforeB').textContent = toHex(prevState.b);
+    document.getElementById('beforeC').textContent = toHex(prevState.c);
+    document.getElementById('beforeD').textContent = toHex(prevState.d);
+    
+    document.getElementById('afterA').textContent = toHex(state.a);
+    document.getElementById('afterB').textContent = toHex(state.b);
+    document.getElementById('afterC').textContent = toHex(state.c);
+    document.getElementById('afterD').textContent = toHex(state.d);
+    
+    // Highlight changed values
+    if (state.a !== prevState.a) document.getElementById('afterA').classList.add('highlight-change');
+    if (state.b !== prevState.b) document.getElementById('afterB').classList.add('highlight-change');
+    if (state.c !== prevState.c) document.getElementById('afterC').classList.add('highlight-change');
+    if (state.d !== prevState.d) document.getElementById('afterD').classList.add('highlight-change');
+}
+
+// Update calculation display for a given state
+function updateCalculationDisplay(state) {
+    // If it's initial state, there's no calculation
+    if (state.step === -1) return;
+    
+    // Get the values for this step
+    const { wordIndex, word, constant, s, f, oldA, temp1, temp2, temp3, temp4, temp5 } = state;
+    
+    // Update word and constant values
+    document.getElementById('messageWord').textContent = toHex(word);
+    document.getElementById('messageWordIndex').textContent = `k = ${wordIndex}`;
+    document.getElementById('constantValue').textContent = toHex(constant);
+    document.getElementById('shiftAmount').textContent = s;
+    document.getElementById('functionResult').textContent = toHex(f);
+    
+    // Update calculation steps
+    document.getElementById('stepValueF').textContent = toHex(temp1);
+    document.getElementById('stepValueX').textContent = toHex(temp2);
+    document.getElementById('stepValueT').textContent = toHex(temp3);
+    document.getElementById('stepValueRotate').textContent = toHex(temp4);
+    document.getElementById('stepValueFinal').textContent = toHex(temp5);
+}
+
+// Display final hash output
+function displayFinalOutput(finalState, hashBytes) {
+    // Display final state
+    document.getElementById('finalInitialA').textContent = toHex(MD5_INIT_A);
+    document.getElementById('finalInitialB').textContent = toHex(MD5_INIT_B);
+    document.getElementById('finalInitialC').textContent = toHex(MD5_INIT_C);
+    document.getElementById('finalInitialD').textContent = toHex(MD5_INIT_D);
+    
+    document.getElementById('finalComputedA').textContent = toHex(finalState.a - MD5_INIT_A);
+    document.getElementById('finalComputedB').textContent = toHex(finalState.b - MD5_INIT_B);
+    document.getElementById('finalComputedC').textContent = toHex(finalState.c - MD5_INIT_C);
+    document.getElementById('finalComputedD').textContent = toHex(finalState.d - MD5_INIT_D);
+    
+    document.getElementById('finalResultA').textContent = toHex(finalState.a);
+    document.getElementById('finalResultB').textContent = toHex(finalState.b);
+    document.getElementById('finalResultC').textContent = toHex(finalState.c);
+    document.getElementById('finalResultD').textContent = toHex(finalState.d);
+    
+    // Display hash formats
+    const hexHash = bytesToHex(hashBytes);
+    document.getElementById('hashHex').textContent = hexHash;
+    
+    const bytesDisplay = Array.from(hashBytes).map(b => b.toString(16).padStart(2, '0')).join(' ');
+    document.getElementById('hashBytes').textContent = bytesDisplay;
+    
+    const base64Hash = bytesToBase64(hashBytes);
+    document.getElementById('hashBase64').textContent = base64Hash;
+    
+    // Display multiple block info if applicable
+    displayMultiBlockInfo();
+}
+// MD5 Visualizer - Part 5: Animation and UI Controls
+
+// Initialize UI controls
+function initializeUIControls() {
+    // Format tabs
+    document.querySelectorAll('.format-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            // Remove active class from all tabs
+            document.querySelectorAll('.format-tab').forEach(t => {
+                t.classList.remove('active');
+            });
+            
+            // Add active class to clicked tab
+            tab.classList.add('active');
+            
+            // Hide all format panes
+            document.querySelectorAll('.format-pane').forEach(pane => {
+                pane.classList.remove('active');
+            });
+            
+            // Show the corresponding format pane
+            const format = tab.getAttribute('data-format');
+            document.getElementById(`${format}Format`).classList.add('active');
+        });
+    });
+    
+    // Step slider
+    const stepSlider = document.getElementById('stepSlider');
+    stepSlider.addEventListener('input', () => {
+        const step = parseInt(stepSlider.value);
+        currentStep = step;
+        document.getElementById('currentStep').textContent = `Step: ${step}`;
+        updateCompressionDisplay(step);
+    });
+    
+    // Go to step button
+    document.getElementById('goToStepBtn').addEventListener('click', () => {
+        const input = document.getElementById('stepInput');
+        const step = parseInt(input.value);
+        
+        if (isNaN(step) || step < 0 || step > 63) {
+            input.classList.add('error');
+            setTimeout(() => input.classList.remove('error'), 1000);
+            return;
+        }
+        
+        // Add 1 because our states array is 0-indexed but includes initial state
+        currentStep = step + 1;
+        stepSlider.value = currentStep;
+        document.getElementById('currentStep').textContent = `Step: ${step}`;
+        updateCompressionDisplay(currentStep);
+    });
+    
+    // Play/Pause button
+    document.getElementById('playPauseBtn').addEventListener('click', () => {
+        toggleAnimation();
+    });
+    
+    // Export steps button
+    document.getElementById('exportStepsBtn').addEventListener('click', () => {
+        exportSteps();
+    });
+    
+    // Calculate button
+    document.getElementById('calculateBtn').addEventListener('click', () => {
+        calculateHash();
+    });
+    
+    // Copy buttons
+    document.getElementById('copyHexBtn').addEventListener('click', () => {
+        const hexHash = document.getElementById('hashHex').textContent;
+        copyToClipboard(hexHash);
+    });
+    
+    document.getElementById('copyBase64Btn').addEventListener('click', () => {
+        const base64Hash = document.getElementById('hashBase64').textContent;
+        copyToClipboard(base64Hash);
+    });
+    
+    // Keyboard input handling
+    document.getElementById('messageInput').addEventListener('keypress', (event) => {
+        if (event.key === 'Enter') {
+            calculateHash();
+        }
+    });
+}
+
+// Toggle animation play/pause
+function toggleAnimation() {
+    isPlaying = !isPlaying;
+    const playPauseBtn = document.getElementById('playPauseBtn');
+    
+    if (isPlaying) {
+        playPauseBtn.textContent = 'Pause';
+        animationInterval = setInterval(() => {
+            // Increment step
+            currentStep++;
+            
+            // Check if we've reached the end
+            if (currentStep > 64) {
+                currentStep = 0;
+                clearInterval(animationInterval);
+                isPlaying = false;
+                playPauseBtn.textContent = 'Play';
+            }
+            
+            // Update display
+            document.getElementById('stepSlider').value = currentStep;
+            document.getElementById('currentStep').textContent = `Step: ${currentStep}`;
+            updateCompressionDisplay(currentStep);
+        }, 500); // Animation speed
+    } else {
+        playPauseBtn.textContent = 'Play';
+        clearInterval(animationInterval);
+        animationInterval = null;
+    }
+}
+
+// Export all steps to a text file
+function exportSteps() {
+    // Create text content for export
+    let content = `MD5 Hash Calculation for "${currentMessage}"\n`;
+    content += "=".repeat(50) + "\n\n";
+    
+    // Input message info
+    content += "Input Message:\n";
+    content += `ASCII: ${currentMessage}\n`;
+    content += `Hex: ${bytesToHex(stringToBytes(currentMessage))}\n`;
+    content += `Length: ${currentMessage.length} characters (${currentMessage.length * 8} bits)\n\n`;
+    
+    // Padding info
+    content += "Padding Information:\n";
+    content += `Original Length: ${currentMessage.length * 8} bits\n`;
+    content += `Padding: 1 bit + ${512 - ((currentMessage.length * 8 + 1 + 64) % 512 || 512)} zero bits + 64-bit length field\n`;
+    content += `Total Length: ${paddedMessage.length * 8} bits (${paddedMessage.length} bytes)\n`;
+    content += `512-bit Blocks: ${paddedMessage.length / 64}\n\n`;
+    
+    // Initial state
+    content += "Initial State:\n";
+    content += `A = ${toHex(MD5_INIT_A)}\n`;
+    content += `B = ${toHex(MD5_INIT_B)}\n`;
+    content += `C = ${toHex(MD5_INIT_C)}\n`;
+    content += `D = ${toHex(MD5_INIT_D)}\n\n`;
+    
+    // Steps of calculation
+    content += "MD5 Calculation Steps:\n";
+    content += "=".repeat(50) + "\n\n";
+    
+    for (let i = 1; i < compressionStates.length; i++) {
+        const state = compressionStates[i];
+        const prevState = compressionStates[i-1];
+        const stepNum = i - 1; // Adjust for 0-indexing
+        const round = Math.floor(stepNum / 16) + 1;
+        
+        content += `Step ${stepNum} (Round ${round}):\n`;
+        content += `-`.repeat(20) + "\n";
+        
+        // Register values before
+        content += `Registers Before:\n`;
+        content += `A = ${toHex(prevState.a)}\n`;
+        content += `B = ${toHex(prevState.b)}\n`;
+        content += `C = ${toHex(prevState.c)}\n`;
+        content += `D = ${toHex(prevState.d)}\n\n`;
+        
+        // Calculation details
+        const roundFunction = ['F', 'G', 'H', 'I'][Math.floor(stepNum / 16)];
+        content += `Function: ${roundFunction}(B,C,D) = ${toHex(state.f)}\n`;
+        content += `Message Word X[${state.wordIndex}] = ${toHex(state.word)}\n`;
+        content += `Constant T[${stepNum}] = ${toHex(state.constant)}\n`;
+        content += `Shift Amount s = ${state.s}\n\n`;
+        
+        // Calculation steps
+        content += `A + F(B,C,D) = ${toHex(state.oldA)} + ${toHex(state.f)} = ${toHex(state.temp1)}\n`;
+        content += `+ X[${state.wordIndex}] = ${toHex(state.temp1)} + ${toHex(state.word)} = ${toHex(state.temp2)}\n`;
+        content += `+ T[${stepNum}] = ${toHex(state.temp2)} + ${toHex(state.constant)} = ${toHex(state.temp3)}\n`;
+        content += `Rotate Left by ${state.s} = ${toHex(state.temp4)}\n`;
+        content += `+ B = ${toHex(state.temp4)} + ${toHex(prevState.b)} = ${toHex(state.temp5)}\n\n`;
+        
+        // Register values after
+        content += `Registers After:\n`;
+        content += `A = ${toHex(state.a)}\n`;
+        content += `B = ${toHex(state.b)}\n`;
+        content += `C = ${toHex(state.c)}\n`;
+        content += `D = ${toHex(state.d)}\n\n`;
+    }
+    
+    // Final hash result
+    content += "Final Hash Result:\n";
+    content += "=".repeat(50) + "\n\n";
+    
+    content += `Initial + Final State:\n`;
+    content += `A: ${toHex(MD5_INIT_A)} + ${toHex(compressionStates[64].a - MD5_INIT_A)} = ${toHex(compressionStates[64].a)}\n`;
+    content += `B: ${toHex(MD5_INIT_B)} + ${toHex(compressionStates[64].b - MD5_INIT_B)} = ${toHex(compressionStates[64].b)}\n`;
+    content += `C: ${toHex(MD5_INIT_C)} + ${toHex(compressionStates[64].c - MD5_INIT_C)} = ${toHex(compressionStates[64].c)}\n`;
+    content += `D: ${toHex(MD5_INIT_D)} + ${toHex(compressionStates[64].d - MD5_INIT_D)} = ${toHex(compressionStates[64].d)}\n\n`;
+    
+    // MD5 hash (Little endian)
+    const hashBytes = [
+        ...wordToBytes(hashState.a),
+        ...wordToBytes(hashState.b),
+        ...wordToBytes(hashState.c),
+        ...wordToBytes(hashState.d)
+    ];
+    
+    content += `MD5 Hash (Hex): ${bytesToHex(hashBytes)}\n`;
+    content += `MD5 Hash (Base64): ${bytesToBase64(hashBytes)}\n`;
+    
+    // Create download link
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `md5_steps_${currentMessage.substring(0, 10)}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+// Display multiple block processing information
+function displayMultiBlockInfo() {
+    const container = document.getElementById('multiBlockInfo');
+    container.innerHTML = '';
+    
+    // Only show this section if we have multiple blocks
+    if (multiBlockHashes.length === 0) {
+        container.innerHTML = '<p>This message was processed in a single block.</p>';
+        return;
+    }
+    
+    // Create info for each block
+    let html = `<p>This message required ${multiBlockHashes.length + 1} blocks to process:</p>`;
+    
+    // Initial state
+    html += `
+        <div class="block-processing">
+            <div class="block-header">Initial State</div>
+            <div class="block-registers">
+                <div class="block-register">
+                    <div class="block-register-name">A</div>
+                    <div class="block-register-value">${toHex(MD5_INIT_A)}</div>
+                </div>
+                <div class="block-register">
+                    <div class="block-register-name">B</div>
+                    <div class="block-register-value">${toHex(MD5_INIT_B)}</div>
+                </div>
+                <div class="block-register">
+                    <div class="block-register-name">C</div>
+                    <div class="block-register-value">${toHex(MD5_INIT_C)}</div>
+                </div>
+                <div class="block-register">
+                    <div class="block-register-name">D</div>
+                    <div class="block-register-value">${toHex(MD5_INIT_D)}</div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Each intermediate block
+    multiBlockHashes.forEach((block, index) => {
+        html += `
+            <div class="block-processing">
+                <div class="block-header">After Block ${index + 1}</div>
+                <div class="block-registers">
+                    <div class="block-register">
+                        <div class="block-register-name">A</div>
+                        <div class="block-register-value">${toHex(block.state.a)}</div>
+                    </div>
+                    <div class="block-register">
+                        <div class="block-register-name">B</div>
+                        <div class="block-register-value">${toHex(block.state.b)}</div>
+                    </div>
+                    <div class="block-register">
+                        <div class="block-register-name">C</div>
+                        <div class="block-register-value">${toHex(block.state.c)}</div>
+                    </div>
+                    <div class="block-register">
+                        <div class="block-register-name">D</div>
+                        <div class="block-register-value">${toHex(block.state.d)}</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    // Final state (repeated from single block display)
+    html += `
+        <div class="block-processing">
+            <div class="block-header">Final Hash State</div>
+            <div class="block-registers">
+                <div class="block-register">
+                    <div class="block-register-name">A</div>
+                    <div class="block-register-value">${toHex(hashState.a)}</div>
+                </div>
+                <div class="block-register">
+                    <div class="block-register-name">B</div>
+                    <div class="block-register-value">${toHex(hashState.b)}</div>
+                </div>
+                <div class="block-register">
+                    <div class="block-register-name">C</div>
+                    <div class="block-register-value">${toHex(hashState.c)}</div>
+                </div>
+                <div class="block-register">
+                    <div class="block-register-name">D</div>
+                    <div class="block-register-value">${toHex(hashState.d)}</div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    container.innerHTML = html;
+}// MD5 Visualizer - Part 6: Main Application Logic
+
+// Initialize application when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    // Initialize UI controls
+    initializeUIControls();
+    
+    // Display initial state
+    displayInitialState();
+    
+    // Set default message and calculate hash
+    document.getElementById('messageInput').value = 'abc';
+    calculateHash();
+});
+
+// Main function to calculate hash and update displays
+function calculateHash() {
+    // Reset any previous animation
+    if (animationInterval) {
+        clearInterval(animationInterval);
+        animationInterval = null;
+        isPlaying = false;
+        document.getElementById('playPauseBtn').textContent = 'Play';
+    }
+    
+    // Reset UI
+    resetUI();
+    
+    // Get message from input
+    const messageInput = document.getElementById('messageInput');
+    currentMessage = messageInput.value;
+    
+    // Validate input
+    if (!currentMessage) {
+        document.getElementById('inputError').textContent = 'Please enter a message';
+        return;
+    }
+    
+    document.getElementById('inputError').textContent = '';
+    
+    // Reset multiple block hashes
+    multiBlockHashes = [];
+    
+    try {
+        // Calculate MD5 hash
+        const result = calculateMD5(currentMessage);
+        
+        // Display input formats
+        displayInputFormats(result.messageBytes);
+        
+        // Display padding information
+        displayPaddingInfo(result.messageBytes, result.paddedBytes, result.paddingInfo);
+        
+        // Display initial state
+        displayInitialState();
+        
+        // Display current step (start at 0)
+        currentStep = 0;
+        document.getElementById('stepSlider').value = currentStep;
+        document.getElementById('currentStep').textContent = `Step: ${currentStep}`;
+        updateCompressionDisplay(currentStep);
+        
+        // Display final output
+        displayFinalOutput(result.finalState, result.hash);
+        
+    } catch (error) {
+        // Handle any errors
+        console.error('Error calculating MD5:', error);
+        document.getElementById('inputError').textContent = 'Error calculating MD5: ' + error.message;
+    }
+}
+
+// Predefined examples for demonstrations
+const md5Examples = {
+    empty: '',
+    abc: 'abc',
+    message: 'The quick brown fox jumps over the lazy dog',
+    longText: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.'
+};
+
+// Function to load a predefined example
+function loadExample(exampleKey) {
+    const example = md5Examples[exampleKey];
+    if (example !== undefined) {
+        document.getElementById('messageInput').value = example;
+        calculateHash();
+    }
+}
+
+// Debug function to examine a specific step in detail
+function debugStep(step) {
+    console.log(`Debugging Step ${step}:`);
+    
+    if (step < 0 || step >= compressionStates.length) {
+        console.error(`Invalid step ${step}. Valid range: 0-${compressionStates.length - 1}`);
+        return;
+    }
+    
+    const state = compressionStates[step];
+    console.log('State:', state);
+    
+    // Calculate the round
+    const round = step > 0 ? Math.floor((step - 1) / 16) : -1;
+    console.log(`Round: ${round >= 0 ? round + 1 : 'Initial State'}`);
+    
+    // Calculate word index if applicable
+    if (step > 0) {
+        const actualStep = step - 1;
+        const wordIndex = MD5_INDEX_FUNCTIONS[round](actualStep % 16);
+        console.log(`Word Index: ${wordIndex} (X[${wordIndex}] = ${toHex(messageWords[wordIndex])})`);
+    }
+    
+    // Show register values
+    console.log('Register Values:');
+    console.log(`A: ${toHex(state.a)}`);
+    console.log(`B: ${toHex(state.b)}`);
+    console.log(`C: ${toHex(state.c)}`);
+    console.log(`D: ${toHex(state.d)}`);
+    
+    // Show calculation steps if applicable
+    if (step > 0) {
+        console.log('Calculation Steps:');
+        console.log(`F(B,C,D): ${toHex(state.f)}`);
+        console.log(`A + F: ${toHex(state.temp1)}`);
+        console.log(`+ X[k]: ${toHex(state.temp2)}`);
+        console.log(`+ T[i]: ${toHex(state.temp3)}`);
+        console.log(`ROTATE_LEFT(${state.s}): ${toHex(state.temp4)}`);
+        console.log(`+ B: ${toHex(state.temp5)}`);
+    }
+}
+
+// Add keyboard shortcuts for visualization controls
+document.addEventListener('keydown', (event) => {
+    // Don't interfere with input field
+    if (document.activeElement.tagName === 'INPUT') return;
+    
+    switch (event.key) {
+        case ' ': // Space - toggle play/pause
+            toggleAnimation();
+            event.preventDefault();
+            break;
+        case 'ArrowRight': // Right arrow - next step
+            if (currentStep < 64) {
+                currentStep++;
+                document.getElementById('stepSlider').value = currentStep;
+                document.getElementById('currentStep').textContent = `Step: ${currentStep}`;
+                updateCompressionDisplay(currentStep);
+            }
+            event.preventDefault();
+            break;
+        case 'ArrowLeft': // Left arrow - previous step
+            if (currentStep > 0) {
+                currentStep--;
+                document.getElementById('stepSlider').value = currentStep;
+                document.getElementById('currentStep').textContent = `Step: ${currentStep}`;
+                updateCompressionDisplay(currentStep);
+            }
+            event.preventDefault();
+            break;
+        case 'Home': // Home - first step
+            currentStep = 0;
+            document.getElementById('stepSlider').value = currentStep;
+            document.getElementById('currentStep').textContent = `Step: ${currentStep}`;
+            updateCompressionDisplay(currentStep);
+            event.preventDefault();
+            break;
+        case 'End': // End - last step
+            currentStep = 64;
+            document.getElementById('stepSlider').value = currentStep;
+            document.getElementById('currentStep').textContent = `Step: ${currentStep}`;
+            updateCompressionDisplay(currentStep);
+            event.preventDefault();
+            break;
+    }
+});
+
+// Helper function for formatting hash display
+function formatHashDisplay(hashBytes) {
+    // Create groups of bytes for better readability
+    const formatted = [];
+    for (let i = 0; i < hashBytes.length; i += 4) {
+        formatted.push(bytesToHex(hashBytes.slice(i, i + 4)));
+    }
+    return formatted.join(' ');
+}
+
+// Add tooltips to show binary representations
+function addBinaryTooltips() {
+    document.querySelectorAll('.register-value, .calc-value, .step-value').forEach(el => {
+        const hexValue = el.textContent.trim();
+        if (hexValue.length === 8 && /^[0-9a-fA-F]+$/.test(hexValue)) {
+            const intValue = parseInt(hexValue, 16);
+            const binaryValue = formatBinary(toBinary(intValue));
+            el.title = `Binary: ${binaryValue}`;
+        }
+    });
+}
+
+// Highlight bit changes between two values
+function highlightBitChanges(oldValue, newValue) {
+    const oldBinary = toBinary(oldValue);
+    const newBinary = toBinary(newValue);
+    
+    let result = '';
+    for (let i = 0; i < 32; i++) {
+        if (oldBinary[i] !== newBinary[i]) {
+            result += `<span class="bit-change">${newBinary[i]}</span>`;
+        } else {
+            result += newBinary[i];
+        }
+        
+        // Add space every 8 bits for readability
+        if ((i + 1) % 8 === 0 && i < 31) {
+            result += ' ';
+        }
+    }
+    
+    return result;
+}
+
+// Compare two states and show differences
+function compareStates(state1, state2) {
+    console.log('State Comparison:');
+    
+    // Compare each register
+    ['a', 'b', 'c', 'd'].forEach(reg => {
+        if (state1[reg] !== state2[reg]) {
+            console.log(`${reg.toUpperCase()} changed: ${toHex(state1[reg])} → ${toHex(state2[reg])}`);
+            
+            // Show which bits changed
+            const changedBits = state1[reg] ^ state2[reg];
+            console.log(`Bits changed: ${toBinary(changedBits)}`);
+        } else {
+            console.log(`${reg.toUpperCase()} unchanged: ${toHex(state1[reg])}`);
+        }
+    });
+}
+
+// Function to enhance the visualization experience
+function enhanceVisualization() {
+    // Add binary tooltips for hex values
+    addBinaryTooltips();
+    
+    // Highlight current round in the rounds table
+    const currentRound = currentStep > 0 ? Math.floor((currentStep - 1) / 16) + 1 : 0;
+    
+    document.querySelectorAll('.rounds-table tr').forEach((row, index) => {
+        if (index === currentRound) {
+            row.classList.add('current-round');
+        } else {
+            row.classList.remove('current-round');
+        }
+    });
+    
+    // Update document title with current hash (if available)
+    if (document.getElementById('hashHex').textContent) {
+        document.title = `MD5: ${document.getElementById('hashHex').textContent.substring(0, 8)}...`;
+    } else {
+        document.title = 'MD5 Algorithm Visualizer';
+    }
+}
+
+// Add this function call where appropriate in the visualization process
+document.addEventListener('visibilitychange', () => {
+    // Pause animation when tab is not visible
+    if (document.hidden && isPlaying) {
+        toggleAnimation();
+    }
+});
+
+// On window resize, adjust visualization elements for better display
+window.addEventListener('resize', () => {
+    // Adjust any responsive elements here if needed
+});
+
+// Clean up resources when the page is unloaded
+window.addEventListener('beforeunload', () => {
+    // Clean up any resources (animation intervals, etc.)
+    if (animationInterval) {
+        clearInterval(animationInterval);
+        animationInterval = null;
+    }
+});
+
+    </script> 
+ </body>
+</html>

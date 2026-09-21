@@ -1,0 +1,1911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SHA-1 Visualizer</title>
+    <style>
+        /* SHA-1 Visualizer CSS */
+:root {
+    --primary-color: #3498db;
+    --secondary-color: #2ecc71;
+    --tertiary-color: #e74c3c;
+    --quaternary-color: #f39c12;
+    --bg-color: #f8f9fa;
+    --border-color: #ddd;
+    --text-color: #333;
+    --round-0-color: #3498db;
+    --round-20-color: #9b59b6;
+    --round-40-color: #e67e22;
+    --round-60-color: #16a085;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #2c3e50;
+}
+
+h2 {
+    margin: 20px 0 15px;
+    padding-bottom: 5px;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.section {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.input-section { border-top: 5px solid var(--primary-color); }
+.padding-section { border-top: 5px solid var(--secondary-color); }
+.schedule-section { border-top: 5px solid var(--tertiary-color); }
+.cv-section { border-top: 5px solid var(--quaternary-color); }
+.compression-section { border-top: 5px solid #34495e; }
+.output-section { border-top: 5px solid #16a085; }
+
+.input-group {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+label {
+    font-weight: bold;
+}
+
+input[type="text"] {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+button {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s;
+}
+
+button:hover {
+    background-color: #2980b9;
+}
+
+.error {
+    color: var(--tertiary-color);
+    margin-top: 5px;
+    font-size: 14px;
+}
+
+.info-row {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    gap: 20px;
+    margin: 10px 0;
+    align-items: start;
+}
+
+.info-label {
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.info-value {
+    font-family: monospace;
+    padding: 8px;
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+.binary-scroll {
+    max-height: 150px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+.padding-one {
+    color: var(--secondary-color);
+    font-weight: bold;
+}
+
+.padding-zeros {
+    color: #7f8c8d;
+}
+
+.padding-length {
+    color: var(--primary-color);
+    font-weight: bold;
+}
+
+.schedule-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.nav-btn {
+    background-color: #7f8c8d;
+}
+
+.nav-btn:hover {
+    background-color: #6d7b7c;
+}
+
+.schedule-range {
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.schedule-display {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+}
+
+.schedule-word {
+    background: #f8f9fa;
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+}
+
+.word-label {
+    font-weight: bold;
+    color: #34495e;
+}
+
+.word-value {
+    font-family: monospace;
+    margin-top: 5px;
+}
+
+.calculation-display {
+    margin-top: 20px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    font-family: monospace;
+}
+
+.cv-registers {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.register {
+    flex: 1;
+    text-align: center;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+}
+
+.register-label {
+    font-weight: bold;
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+.register-value {
+    font-family: monospace;
+    font-size: 16px;
+}
+
+.compression-controls {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+#stepSlider {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 8px;
+    background: var(--border-color);
+    border-radius: 4px;
+    outline: none;
+}
+
+#stepSlider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    background: var(--primary-color);
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.round-indicator {
+    padding: 10px;
+    border-radius: 4px;
+    color: white;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.round-0 { background: var(--round-0-color); }
+.round-20 { background: var(--round-20-color); }
+.round-40 { background: var(--round-40-color); }
+.round-60 { background: var(--round-60-color); }
+
+.function-display {
+    margin: 10px 0;
+}
+
+.function-formula {
+    font-family: monospace;
+    background: #f8f9fa;
+    padding: 8px;
+    border-radius: 4px;
+}
+
+.constants-display {
+    display: flex;
+    gap: 20px;
+    margin: 10px 0;
+    font-family: monospace;
+}
+
+.temp-calculation {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 4px;
+    margin: 15px 0;
+    font-family: monospace;
+}
+
+.register-updates {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin: 15px 0;
+}
+
+.update-row {
+    font-family: monospace;
+    padding: 5px;
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+.registers-view {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.output-display {
+    margin-top: 20px;
+}
+
+.hash-format {
+    margin: 15px 0;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.format-label {
+    font-weight: bold;
+    min-width: 100px;
+}
+
+.hash-value {
+    flex: 1;
+    font-family: monospace;
+    padding: 5px;
+}
+
+.copy-btn {
+    background-color: #7f8c8d;
+    white-space: nowrap;
+}
+
+.copy-btn:hover {
+    background-color: #6d7b7c;
+}
+
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: var(--secondary-color);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 4px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    transform: translateY(-100px);
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.notification.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.chunk {
+    margin: 10px 0;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .cv-registers,
+    .registers-view {
+        flex-direction: column;
+    }
+    
+    .input-group {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .hash-format {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .format-label {
+        margin-bottom: 5px;
+    }
+}
+/* Additional CSS for SHA-1 Visualizer Improvements */
+
+/* Padding counters */
+.padding-counters {
+    margin: 20px 0;
+    background: #f5f9ff;
+    border-radius: 8px;
+    padding: 15px;
+    border: 1px solid #d1e1ff;
+}
+
+.counter-item {
+    display: flex;
+    padding: 8px 0;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.counter-item:last-child {
+    border-bottom: none;
+}
+
+.counter-label {
+    flex: 0 0 200px;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.counter-value {
+    flex: 1;
+    font-family: monospace;
+}
+
+/* Word display in padded message */
+.word-display {
+    padding: 8px;
+    margin: 5px 0;
+    background: #f8f9fa;
+    border-radius: 4px;
+    font-family: monospace;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.word-index {
+    font-weight: bold;
+    margin-right: 10px;
+    min-width: 60px;
+}
+
+.word-hex {
+    background: #eee;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-right: 10px;
+}
+
+.word-binary {
+    font-family: monospace;
+    letter-spacing: 1px;
+    margin-top: 5px;
+    width: 100%;
+    white-space: pre;
+    line-height: 1.5;
+    padding: 5px;
+    border-radius: 4px;
+    background: #f0f0f0;
+}
+
+.message-part {
+    background: #d1f7c4;
+}
+
+.padding-one-part {
+    background: #ffe0b2;
+}
+
+.padding-zeros-part {
+    background: #e0e0e0;
+}
+
+.length-part {
+    background: #c5cae9;
+}
+
+.chunk-header {
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #2c3e50;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 5px;
+}
+
+/* Improved schedule display */
+.schedule-word {
+    padding: 15px;
+}
+
+.word-binary {
+    margin-top: 10px;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+}
+
+/* Calculation display improvements */
+.calculation {
+    margin-top: 20px;
+    padding: 15px;
+    background: #f1f8e9;
+    border-radius: 4px;
+    border: 1px solid #c5e1a5;
+}
+
+.calculation-title {
+    font-weight: bold;
+    margin-bottom: 15px;
+    color: #33691e;
+}
+
+.calculation-row {
+    margin: 8px 0;
+    font-family: monospace;
+}
+
+.calculation-label {
+    display: inline-block;
+    min-width: 80px;
+    font-weight: bold;
+}
+
+.calculation-hex {
+    background: #eee;
+    padding: 2px 5px;
+    border-radius: 3px;
+}
+
+.calculation-result {
+    margin-top: 15px;
+    padding-top: 10px;
+    border-top: 1px solid #ddd;
+    font-weight: bold;
+}
+
+.calculation-note {
+    padding: 10px;
+    background: #f0f0f0;
+    border-radius: 4px;
+    font-style: italic;
+}
+
+/* Detailed step calculation */
+.detailed-calculation {
+    margin-top: 20px;
+    padding: 15px;
+    background: #fff8e1;
+    border-radius: 4px;
+    border: 1px solid #ffe082;
+}
+
+.step-title {
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #ff6f00;
+}
+
+.step-row {
+    margin: 8px 0;
+    font-family: monospace;
+}
+
+.step-label {
+    display: inline-block;
+    min-width: 80px;
+    font-weight: bold;
+}
+
+.step-value {
+    background: #eee;
+    padding: 2px 5px;
+    border-radius: 3px;
+    margin-right: 10px;
+}
+
+.step-note {
+    font-size: 12px;
+    color: #666;
+    font-style: italic;
+}
+
+.step-result {
+    margin-top: 15px;
+    padding-top: 10px;
+    border-top: 1px solid #ffe082;
+    font-weight: bold;
+}
+
+/* Export button */
+.export-btn {
+    background-color: #9c27b0;
+    margin-left: auto;
+}
+
+.export-btn:hover {
+    background-color: #7b1fa2;
+}
+
+/* Step lookup */
+.step-lookup {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: 20px;
+}
+
+.step-lookup input {
+    width: 80px;
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+}
+
+/* Intermediate hash toggle */
+.intermediate-toggle {
+    margin: 20px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background: #f0f0f0;
+    border-radius: 4px;
+}
+
+.intermediate-toggle input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+}
+
+.intermediate-toggle label {
+    font-weight: bold;
+    margin-bottom: 0;
+}
+
+/* Intermediate hash values display */
+.intermediate-hashes {
+    margin-top: 20px;
+    padding: 15px;
+    background: #f5f5f5;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+.intermediate-hashes h3 {
+    margin-bottom: 15px;
+    color: #2c3e50;
+    font-size: 18px;
+}
+
+.intermediate-hash {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin: 10px 0;
+    padding: 10px;
+    background: white;
+    border-radius: 4px;
+    border: 1px solid #e0e0e0;
+}
+
+.hash-index {
+    min-width: 60px;
+    font-weight: bold;
+    color: #34495e;
+}
+
+.hash-value {
+    font-family: monospace;
+    font-size: 14px;
+    letter-spacing: 1px;
+}
+
+.final-hash-explanation {
+    margin-top: 20px;
+    padding: 15px;
+    background: #e8f5e9;
+    border-radius: 8px;
+    border: 1px solid #c8e6c9;
+}
+
+.explanation-title {
+    font-weight: bold;
+    color: #2e7d32;
+    margin-bottom: 10px;
+}
+
+.explanation-content {
+    font-family: monospace;
+    line-height: 1.6;
+}
+
+.final-result {
+    margin-top: 15px;
+    padding-top: 10px;
+    border-top: 1px solid #c8e6c9;
+    font-weight: bold;
+    color: #2e7d32;
+}
+
+/* Format binary better with monospace and spacing */
+.binary-scroll {
+    font-family: monospace;
+    letter-spacing: 1px;
+    line-height: 1.5;
+    padding: 10px;
+}
+
+/* Make 32-bit words stand out in binary display */
+.binary-scroll .word {
+    display: inline-block;
+    margin-bottom: 5px;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 2px;
+}
+
+/* Additional styling for the notification */
+.notification {
+    z-index: 1000;
+}
+
+/* Responsive adjustments for new components */
+@media (max-width: 768px) {
+    .counter-item,
+    .word-display,
+    .intermediate-hash {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .counter-label,
+    .hash-index {
+        margin-bottom: 5px;
+    }
+    
+    .step-lookup {
+        margin-top: 10px;
+        margin-left: 0;
+        flex-wrap: wrap;
+    }
+}
+    </style>
+</head>
+<body>
+<nav style="margin: 0 0 20px; font: 14px system-ui"><a href="../index.html">← All CryptoApps</a> · Educational use only</nav>
+    <h1>SHA-1 Visualizer</h1>
+    
+    <!-- Input Section -->
+    <div class="section input-section">
+        <h2>1. Input Message</h2>
+        <div class="input-group">
+            <label for="messageInput">Enter Message:</label>
+            <input type="text" id="messageInput" placeholder="e.g., We are students">
+            <button id="calculateBtn">Calculate SHA-1</button>
+        </div>
+        <div id="inputError" class="error"></div>
+    </div>
+    
+    <!-- Padding Stage -->
+    <div class="section padding-section">
+        <h2>2. Message Padding</h2>
+        <div class="padding-info">
+            <div class="info-row">
+                <div class="info-label">Original ASCII:</div>
+                <div id="asciiDisplay" class="info-value"></div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Binary Representation:</div>
+                <div id="binaryDisplay" class="info-value binary-scroll"></div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Message Length (bits):</div>
+                <div id="lengthDisplay" class="info-value"></div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Padding Applied:</div>
+                <div id="paddingDisplay" class="info-value">
+                    <span class="padding-one">1</span> + 
+                    <span id="paddingZeros" class="padding-zeros"></span> 0's + 
+                    <span id="paddingLength" class="padding-length"></span>
+                </div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Padded Message (512-bit chunks):</div>
+                <div id="paddedMessageDisplay" class="info-value binary-scroll"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Message Schedule -->
+    <div class="section schedule-section">
+        <h2>3. Message Schedule (W[0] to W[79])</h2>
+        <div class="schedule-controls">
+            <button id="prevScheduleBtn" class="nav-btn">← Previous</button>
+            <span id="scheduleRange" class="schedule-range">W[0] - W[15]</span>
+            <button id="nextScheduleBtn" class="nav-btn">Next →</button>
+        </div>
+        <div id="messageSchedule" class="schedule-display"></div>
+        <div id="scheduleCalculation" class="calculation-display"></div>
+    </div>
+    
+    <!-- Initial CV Values -->
+    <div class="section cv-section">
+        <h2>4. Initial Chaining Values (CV)</h2>
+        <div class="cv-registers">
+            <div class="register">
+                <div class="register-label">A</div>
+                <div id="registerA" class="register-value">67452301</div>
+            </div>
+            <div class="register">
+                <div class="register-label">B</div>
+                <div id="registerB" class="register-value">EFCDAB89</div>
+            </div>
+            <div class="register">
+                <div class="register-label">C</div>
+                <div id="registerC" class="register-value">98BADCFE</div>
+            </div>
+            <div class="register">
+                <div class="register-label">D</div>
+                <div id="registerD" class="register-value">10325476</div>
+            </div>
+            <div class="register">
+                <div class="register-label">E</div>
+                <div id="registerE" class="register-value">C3D2E1F0</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Compression Loop -->
+    <div class="section compression-section">
+        <h2>5. Main Compression Loop (80 Steps)</h2>
+        <div class="compression-controls">
+            <input type="range" id="stepSlider" min="0" max="79" value="0">
+            <span id="currentStep">Step: 0</span>
+            <button id="playPauseBtn">Play</button>
+        </div>
+        
+        <div class="compression-display">
+            <div class="round-info">
+                <div class="round-indicator" id="roundIndicator">
+                    Round Group: <span id="roundGroup">0-19</span>
+                </div>
+                <div class="function-display">
+                    <div class="function-label">Function f(t):</div>
+                    <div id="functionFormula" class="function-formula"></div>
+                </div>
+                <div class="constants-display">
+                    <div>K(t): <span id="constantValue">5A827999</span></div>
+                    <div>W[t]: <span id="wValue">00000000</span></div>
+                </div>
+            </div>
+            
+            <div class="calculations-display">
+                <div class="temp-calculation">
+                    TEMP = S5(A) + f(t) + E + W[t] + K(t) = <span id="tempValue">00000000</span>
+                </div>
+                <div class="register-updates">
+                    <div class="update-row"><span class="update-label">E ← D</span></div>
+                    <div class="update-row"><span class="update-label">D ← C</span></div>
+                    <div class="update-row"><span class="update-label">C ← S30(B)</span></div>
+                    <div class="update-row"><span class="update-label">B ← A</span></div>
+                    <div class="update-row"><span class="update-label">A ← TEMP</span></div>
+                </div>
+            </div>
+            
+            <div class="registers-view">
+                <div class="register">
+                    <div class="register-label">A</div>
+                    <div id="currentA" class="register-value">67452301</div>
+                </div>
+                <div class="register">
+                    <div class="register-label">B</div>
+                    <div id="currentB" class="register-value">EFCDAB89</div>
+                </div>
+                <div class="register">
+                    <div class="register-label">C</div>
+                    <div id="currentC" class="register-value">98BADCFE</div>
+                </div>
+                <div class="register">
+                    <div class="register-label">D</div>
+                    <div id="currentD" class="register-value">10325476</div>
+                </div>
+                <div class="register">
+                    <div class="register-label">E</div>
+                    <div id="currentE" class="register-value">C3D2E1F0</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Final Output -->
+    <div class="section output-section">
+        <h2>6. Final Hash Output</h2>
+        <div class="output-display">
+            <div class="hash-format">
+                <div class="format-label">Hexadecimal:</div>
+                <div id="hexOutput" class="hash-value"></div>
+                <button id="copyHexBtn" class="copy-btn">Copy</button>
+            </div>
+            <div class="hash-format">
+                <div class="format-label">Binary:</div>
+                <div id="binaryOutput" class="hash-value binary-scroll"></div>
+                <button id="copyBinaryBtn" class="copy-btn">Copy</button>
+            </div>
+            <div class="hash-format">
+                <div class="format-label">Base64:</div>
+                <div id="base64Output" class="hash-value"></div>
+                <button id="copyBase64Btn" class="copy-btn">Copy</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="notification" class="notification">Copied to clipboard!</div>
+    
+    <!-- JavaScript Files -->
+   <script>
+   // SHA-1 Visualizer JavaScript
+// Part 1: Constants & Global Variables
+
+// SHA-1 Constants
+const K = [
+    0x5A827999, // 0-19
+    0x6ED9EBA1, // 20-39
+    0x8F1BBCDC, // 40-59
+    0xCA62C1D6  // 60-79
+];
+
+// Initial hash values
+const H0 = 0x67452301;
+const H1 = 0xEFCDAB89;
+const H2 = 0x98BADCFE;
+const H3 = 0x10325476;
+const H4 = 0xC3D2E1F0;
+
+// Global variables
+let currentMessage = "";
+let paddedMessage = [];
+let messageSchedule = new Array(80);
+let h = [H0, H1, H2, H3, H4];
+let currentStep = 0;
+let isPlaying = false;
+let animationInterval = null;
+let compressionStates = [];
+
+// Round functions
+const roundFunctions = {
+    0: {
+        formula: "(B AND C) OR ((NOT B) AND D)",
+        func: (b, c, d) => (b & c) | ((~b) & d)
+    },
+    1: {
+        formula: "B XOR C XOR D",
+        func: (b, c, d) => b ^ c ^ d
+    },
+    2: {
+        formula: "(B AND C) OR (B AND D) OR (C AND D)",
+        func: (b, c, d) => (b & c) | (b & d) | (c & d)
+    },
+    3: {
+        formula: "B XOR C XOR D",
+        func: (b, c, d) => b ^ c ^ d
+    }
+};
+// Part 2: Utility Functions
+
+// Left Rotate function
+function rotateLeft(n, s) {
+    return ((n << s) | (n >>> (32 - s))) >>> 0;
+}
+
+// Convert string to UTF-8 byte array
+function stringToBytes(str) {
+    const encoder = new TextEncoder();
+    return encoder.encode(str);
+}
+
+// Convert byte to binary string
+function byteToBinaryString(byte) {
+    return byte.toString(2).padStart(8, '0');
+}
+
+// Convert array of bytes to binary string
+function bytesToBinaryString(bytes) {
+    return Array.from(bytes)
+        .map(byte => byteToBinaryString(byte))
+        .join(' ');
+}
+
+// Convert integer to hex string
+function toHex(num) {
+    return num.toString(16).padStart(8, '0').toUpperCase();
+}
+
+// Convert integer to binary string
+function toBinary(num) {
+    return num.toString(2).padStart(32, '0');
+}
+
+// Convert integer to byte array (big-endian)
+function intToBytes(num) {
+    return [
+        (num >>> 24) & 0xFF,
+        (num >>> 16) & 0xFF,
+        (num >>> 8) & 0xFF,
+        num & 0xFF
+    ];
+}
+
+// Convert 4 bytes to integer (big-endian)
+function bytesToInt(bytes, offset = 0) {
+    return ((bytes[offset] << 24) |
+            (bytes[offset + 1] << 16) |
+            (bytes[offset + 2] << 8) |
+            bytes[offset + 3]) >>> 0;
+}
+
+// Show notification
+function showNotification(message) {
+    const notification = document.getElementById('notification');
+    notification.textContent = message;
+    notification.classList.add('show');
+    
+    setTimeout(() => {
+        notification.classList.remove('show');
+    }, 2000);
+}
+
+// Copy to clipboard
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text)
+        .then(() => showNotification('Copied to clipboard!'))
+        .catch(() => showNotification('Failed to copy. Try again.'));
+}
+
+// Format binary string for display
+function formatBinaryDisplay(binaryString) {
+    // Insert spaces every 8 characters for readability
+    return binaryString.replace(/(.{8})/g, '$1 ').trim();
+}
+
+// Convert bytes to Base64
+function bytesToBase64(bytes) {
+    let binary = '';
+    for (let i = 0; i < bytes.length; i++) {
+        binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
+}
+
+// Clear displays
+function clearDisplays() {
+    document.getElementById('asciiDisplay').textContent = '';
+    document.getElementById('binaryDisplay').textContent = '';
+    document.getElementById('lengthDisplay').textContent = '';
+    document.getElementById('paddingZeros').textContent = '';
+    document.getElementById('paddingLength').textContent = '';
+    document.getElementById('paddedMessageDisplay').textContent = '';
+    document.getElementById('messageSchedule').innerHTML = '';
+    document.getElementById('scheduleCalculation').textContent = '';
+    document.getElementById('hexOutput').textContent = '';
+    document.getElementById('binaryOutput').textContent = '';
+    document.getElementById('base64Output').textContent = '';
+}
+// Part 3: Core SHA-1 Functions
+
+// Pad the message according to SHA-1 specification
+function padMessage(messageBytes) {
+    const messageBits = messageBytes.length * 8;
+    const paddedLength = Math.ceil((messageBits + 1 + 64) / 512) * 512;
+    const paddedArray = new Uint8Array(paddedLength / 8);
+    
+    // Copy original message
+    paddedArray.set(messageBytes, 0);
+    
+    // Append '1' bit (0x80)
+    paddedArray[messageBytes.length] = 0x80;
+    
+    // Add the message length in bits as a 64-bit big-endian integer
+    const offset = paddedArray.length - 8;
+    const length = messageBits;
+    
+    // High 32 bits (always 0 for our purposes)
+    paddedArray[offset] = 0;
+    paddedArray[offset + 1] = 0;
+    paddedArray[offset + 2] = 0;
+    paddedArray[offset + 3] = 0;
+    
+    // Low 32 bits
+    paddedArray[offset + 4] = (length >>> 24) & 0xFF;
+    paddedArray[offset + 5] = (length >>> 16) & 0xFF;
+    paddedArray[offset + 6] = (length >>> 8) & 0xFF;
+    paddedArray[offset + 7] = length & 0xFF;
+    
+    return paddedArray;
+}
+
+// Create message schedule
+function createMessageSchedule(block) {
+    const w = new Array(80);
+    
+    // Words 0-15: Direct from the message block
+    for (let t = 0; t < 16; t++) {
+        w[t] = bytesToInt(block, t * 4);
+    }
+    
+    // Words 16-79: Computed
+    for (let t = 16; t < 80; t++) {
+        w[t] = rotateLeft(w[t-3] ^ w[t-8] ^ w[t-14] ^ w[t-16], 1);
+    }
+    
+    return w;
+}
+
+// Get round function and constant for a given step
+function getRoundInfo(t) {
+    let roundIndex, k;
+    
+    if (t < 20) {
+        roundIndex = 0;
+        k = K[0];
+    } else if (t < 40) {
+        roundIndex = 1;
+        k = K[1];
+    } else if (t < 60) {
+        roundIndex = 2;
+        k = K[2];
+    } else {
+        roundIndex = 3;
+        k = K[3];
+    }
+    
+    return {
+        f: roundFunctions[roundIndex].func,
+        formula: roundFunctions[roundIndex].formula,
+        k: k
+    };
+}
+
+// Main compression function
+function compress(block) {
+    const w = createMessageSchedule(block);
+    
+    // Save initial values
+    const initA = h[0];
+    const initB = h[1];
+    const initC = h[2];
+    const initD = h[3];
+    const initE = h[4];
+    
+    let a = initA;
+    let b = initB;
+    let c = initC;
+    let d = initD;
+    let e = initE;
+    
+    // Store all states for visualization
+    const states = [{
+        step: -1,
+        a: a,
+        b: b,
+        c: c,
+        d: d,
+        e: e,
+        temp: 0,
+        f: 0,
+        k: 0,
+        w: 0
+    }];
+    
+    // 80 rounds
+    for (let t = 0; t < 80; t++) {
+        const { f, k } = getRoundInfo(t);
+        
+        const temp = (rotateLeft(a, 5) + f(b, c, d) + e + w[t] + k) >>> 0;
+        
+        e = d;
+        d = c;
+        c = rotateLeft(b, 30);
+        b = a;
+        a = temp;
+        
+        states.push({
+            step: t,
+            a: a,
+            b: b,
+            c: c,
+            d: d,
+            e: e,
+            temp: temp,
+            f: f(b, c, d),
+            k: k,
+            w: w[t]
+        });
+    }
+    
+    // Add compressed chunk to current hash value
+    h[0] = (h[0] + a) >>> 0;
+    h[1] = (h[1] + b) >>> 0;
+    h[2] = (h[2] + c) >>> 0;
+    h[3] = (h[3] + d) >>> 0;
+    h[4] = (h[4] + e) >>> 0;
+    
+    return { states, w };
+}
+
+// Calculate SHA-1 hash
+
+// Part 4: Display Functions
+
+// Display input information// Part 4: Improved Display Functions
+
+// Format byte array to binary string with proper 32-bit word formatting
+function formatBinaryIntoWords(bytes) {
+    let binaryString = '';
+    for (let i = 0; i < bytes.length; i += 4) {
+        // Process in 32-bit (4-byte) chunks
+        const word = [];
+        for (let j = 0; j < 4 && i + j < bytes.length; j++) {
+            word.push(byteToBinaryString(bytes[i + j]));
+        }
+        binaryString += word.join('') + '\n';
+    }
+    return binaryString;
+}
+
+// Display input information with improved counters
+function displayInputInfo(messageBytes) {
+    const ascii = currentMessage.split('')
+        .map(c => `${c}: ${c.charCodeAt(0)}`)
+        .join(' | ');
+    
+    const binary = formatBinaryIntoWords(messageBytes);
+    const messageBits = messageBytes.length * 8;
+    
+    document.getElementById('asciiDisplay').textContent = ascii;
+    document.getElementById('binaryDisplay').textContent = binary;
+    document.getElementById('lengthDisplay').textContent = `${messageBits} bits`;
+}
+
+// Display padding information with improved counters
+function displayPaddingInfo(messageBytes, paddedBytes) {
+    const messageBits = messageBytes.length * 8;
+    const paddedBits = paddedBytes.length * 8;
+    const paddingBits = paddedBits - messageBits - 1 - 64; // 1 for '1' bit, 64 for length
+    const blockCount = paddedBytes.length / 64;
+    
+    document.getElementById('paddingZeros').textContent = paddingBits;
+    document.getElementById('paddingLength').textContent = `64-bit message length: ${messageBits}`;
+    
+    // Add new counters
+    const countersDiv = document.createElement('div');
+    countersDiv.className = 'padding-counters';
+    countersDiv.innerHTML = `
+        <div class="counter-item">
+            <div class="counter-label">Original Message Size:</div>
+            <div class="counter-value">${messageBits} bits (${messageBytes.length} bytes)</div>
+        </div>
+        <div class="counter-item">
+            <div class="counter-label">Padding Added:</div>
+            <div class="counter-value">${paddingBits + 1 + 64} bits (1-bit + ${paddingBits} zeros + 64-bit length)</div>
+        </div>
+        <div class="counter-item">
+            <div class="counter-label">Total Size After Padding:</div>
+            <div class="counter-value">${paddedBits} bits (${paddedBytes.length} bytes)</div>
+        </div>
+        <div class="counter-item">
+            <div class="counter-label">512-bit Blocks:</div>
+            <div class="counter-value">${blockCount} block${blockCount > 1 ? 's' : ''}</div>
+        </div>
+    `;
+    
+    // Find place to insert counters
+    const paddingInfo = document.querySelector('.padding-info');
+    paddingInfo.insertBefore(countersDiv, document.getElementById('paddedMessageDisplay').parentNode);
+    
+    // Display padded message in 32-bit word chunks
+    displayPaddedMessageInWords(messageBytes, paddedBytes);
+}
+
+// Display padded message with clear 32-bit word boundaries
+function displayPaddedMessageInWords(messageBytes, paddedBytes) {
+    const messageBits = messageBytes.length * 8;
+    const messagePaddingOffset = messageBytes.length;
+    const paddedMessageDisplay = document.getElementById('paddedMessageDisplay');
+    paddedMessageDisplay.innerHTML = '';
+    
+    // Calculate byte positions
+    const oneBitPosition = messagePaddingOffset;
+    const lengthPosition = paddedBytes.length - 8;
+    
+    // Process each 512-bit block
+    for (let blockIndex = 0; blockIndex < paddedBytes.length; blockIndex += 64) {
+        const blockDiv = document.createElement('div');
+        blockDiv.className = 'chunk';
+        blockDiv.innerHTML = `<div class="chunk-header">Block ${blockIndex / 64}:</div>`;
+        
+        // Process each 32-bit word in the block
+        for (let wordIndex = 0; wordIndex < 64; wordIndex += 4) {
+            const byteIndex = blockIndex + wordIndex;
+            const wordBytes = paddedBytes.slice(byteIndex, byteIndex + 4);
+            const word = bytesToInt(wordBytes);
+            
+            const wordDiv = document.createElement('div');
+            wordDiv.className = 'word-display';
+            
+            // Determine which part of the message this word belongs to
+            let wordClass = '';
+            if (byteIndex < messagePaddingOffset) {
+                wordClass = 'message-part';
+            } else if (byteIndex === oneBitPosition) {
+                wordClass = 'padding-one-part';
+            } else if (byteIndex >= lengthPosition) {
+                wordClass = 'length-part';
+            } else {
+                wordClass = 'padding-zeros-part';
+            }
+            
+            // Calculate which W[] this corresponds to
+            const wIndex = (wordIndex / 4) % 16;
+            
+            wordDiv.innerHTML = `
+                <span class="word-index">W[${wIndex}] = </span>
+                <span class="word-hex">${toHex(word)}</span>
+                <span class="word-binary ${wordClass}">${toBinary(word)}</span>
+            `;
+            
+            blockDiv.appendChild(wordDiv);
+        }
+        
+        paddedMessageDisplay.appendChild(blockDiv);
+    }
+}
+
+// Display message schedule with improved formatting
+function displayMessageSchedule(start = 0) {
+    const scheduleDisplay = document.getElementById('messageSchedule');
+    scheduleDisplay.innerHTML = '';
+    
+    const itemsPerPage = 16;
+    const end = Math.min(start + itemsPerPage, 80);
+    
+    document.getElementById('scheduleRange').textContent = 
+        `W[${start}] - W[${end - 1}]`;
+    
+    for (let i = start; i < end; i++) {
+        const word = document.createElement('div');
+        word.className = 'schedule-word';
+        
+        const label = document.createElement('div');
+        label.className = 'word-label';
+        label.textContent = `W[${i}]:`;
+        
+        const value = document.createElement('div');
+        value.className = 'word-value';
+        value.textContent = toHex(messageSchedule[i]);
+        
+        const binary = document.createElement('div');
+        binary.className = 'word-binary';
+        binary.textContent = toBinary(messageSchedule[i]);
+        
+        word.appendChild(label);
+        word.appendChild(value);
+        word.appendChild(binary);
+        scheduleDisplay.appendChild(word);
+    }
+    
+    // Show calculation for W[t] when t >= 16
+    if (start >= 16) {
+        const t = start;
+        const w_t_3 = messageSchedule[t-3];
+        const w_t_8 = messageSchedule[t-8];
+        const w_t_14 = messageSchedule[t-14];
+        const w_t_16 = messageSchedule[t-16];
+        
+        const xorResult = w_t_3 ^ w_t_8 ^ w_t_14 ^ w_t_16;
+        const finalResult = rotateLeft(xorResult, 1);
+        
+        const calculation = document.createElement('div');
+        calculation.className = 'calculation';
+        calculation.innerHTML = `
+            <div class="calculation-title">Example: W[${t}] = S1(W[${t-3}] ^ W[${t-8}] ^ W[${t-14}] ^ W[${t-16}])</div>
+            <div class="calculation-row">
+                <span class="calculation-label">W[${t-3}]</span> = 
+                <span class="calculation-hex">${toHex(w_t_3)}</span>
+            </div>
+            <div class="calculation-row">
+                <span class="calculation-label">W[${t-8}]</span> = 
+                <span class="calculation-hex">${toHex(w_t_8)}</span>
+            </div>
+            <div class="calculation-row">
+                <span class="calculation-label">W[${t-14}]</span> = 
+                <span class="calculation-hex">${toHex(w_t_14)}</span>
+            </div>
+            <div class="calculation-row">
+                <span class="calculation-label">W[${t-16}]</span> = 
+                <span class="calculation-hex">${toHex(w_t_16)}</span>
+            </div>
+            <div class="calculation-row calculation-result">
+                <span class="calculation-label">XOR Result</span> = 
+                <span class="calculation-hex">${toHex(xorResult)}</span>
+            </div>
+            <div class="calculation-row calculation-result">
+                <span class="calculation-label">S1(XOR Result)</span> = 
+                <span class="calculation-hex">${toHex(finalResult)}</span> = W[${t}]
+            </div>
+        `;
+        document.getElementById('scheduleCalculation').innerHTML = '';
+        document.getElementById('scheduleCalculation').appendChild(calculation);
+    } else {
+        document.getElementById('scheduleCalculation').innerHTML = 
+            '<div class="calculation-note">W[0] to W[15] are taken directly from the message block.</div>';
+    }
+}
+
+// Display compression step with improved visualization
+function displayCompressionStep(step) {
+    if (step < 0 || step >= compressionStates.length) return;
+    
+    const state = compressionStates[step];
+    
+    // Update register displays
+    document.getElementById('currentA').textContent = toHex(state.a);
+    document.getElementById('currentB').textContent = toHex(state.b);
+    document.getElementById('currentC').textContent = toHex(state.c);
+    document.getElementById('currentD').textContent = toHex(state.d);
+    document.getElementById('currentE').textContent = toHex(state.e);
+    
+    if (step === 0) {
+        // Initial values, no calculation to show
+        document.getElementById('tempValue').textContent = '00000000';
+        document.getElementById('constantValue').textContent = toHex(K[0]);
+        document.getElementById('wValue').textContent = '00000000';
+        document.getElementById('functionFormula').textContent = roundFunctions[0].formula;
+        document.getElementById('roundGroup').textContent = '0-19';
+        
+        // Hide or reset calculation details
+        document.querySelector('.calculations-display').style.opacity = '0.5';
+        return;
+    }
+    
+    // Show calculation details
+    document.querySelector('.calculations-display').style.opacity = '1';
+    
+    const actualStep = step - 1;
+    const roundIndex = actualStep < 20 ? 0 : 
+                      actualStep < 40 ? 1 : 
+                      actualStep < 60 ? 2 : 3;
+                      
+    const { formula, k } = getRoundInfo(actualStep);
+    
+    // Update round information
+    const roundGroup = actualStep < 20 ? '0-19' :
+                      actualStep < 40 ? '20-39' :
+                      actualStep < 60 ? '40-59' : '60-79';
+    
+    document.getElementById('roundGroup').textContent = roundGroup;
+    document.getElementById('functionFormula').textContent = formula;
+    document.getElementById('constantValue').textContent = toHex(k);
+    document.getElementById('wValue').textContent = toHex(state.w);
+    document.getElementById('tempValue').textContent = toHex(state.temp);
+    
+    // Update round indicator color based on group
+    const roundIndicator = document.getElementById('roundIndicator');
+    roundIndicator.className = 'round-indicator round-' + Math.floor(actualStep / 20) * 20;
+    
+    // Provide more detailed calculation breakdown
+    updateCalculationDetails(state, actualStep);
+}
+
+// Add detailed calculation breakdown
+function updateCalculationDetails(state, step) {
+    const prevState = compressionStates[step]; // Get previous step's state
+    const roundInfo = getRoundInfo(step);
+    
+    // Create detailed calculation element if it doesn't exist
+    if (!document.getElementById('detailedCalculation')) {
+        const detailsDiv = document.createElement('div');
+        detailsDiv.id = 'detailedCalculation';
+        detailsDiv.className = 'detailed-calculation';
+        document.querySelector('.calculations-display').appendChild(detailsDiv);
+    }
+    
+    const rotatedA = rotateLeft(prevState.a, 5);
+    const fResult = roundInfo.f(prevState.b, prevState.c, prevState.d);
+    
+    // Update detailed calculation
+    document.getElementById('detailedCalculation').innerHTML = `
+        <div class="detailed-step">
+            <div class="step-title">Step ${step} Detailed Calculation:</div>
+            <div class="step-row">
+                <span class="step-label">S5(A)</span> = 
+                <span class="step-value">${toHex(rotatedA)}</span>
+                <span class="step-note">(A = ${toHex(prevState.a)} rotated left 5 bits)</span>
+            </div>
+            <div class="step-row">
+                <span class="step-label">f(B,C,D)</span> = 
+                <span class="step-value">${toHex(fResult)}</span>
+                <span class="step-note">(${roundInfo.formula} for round group ${Math.floor(step / 20) * 20}-${Math.floor(step / 20) * 20 + 19})</span>
+            </div>
+            <div class="step-row">
+                <span class="step-label">E</span> = 
+                <span class="step-value">${toHex(prevState.e)}</span>
+            </div>
+            <div class="step-row">
+                <span class="step-label">W[${step}]</span> = 
+                <span class="step-value">${toHex(state.w)}</span>
+            </div>
+            <div class="step-row">
+                <span class="step-label">K[${Math.floor(step / 20)}]</span> = 
+                <span class="step-value">${toHex(roundInfo.k)}</span>
+            </div>
+            <div class="step-row step-result">
+                <span class="step-label">TEMP</span> = 
+                <span class="step-value">${toHex(state.temp)}</span>
+                <span class="step-note">= S5(A) + f(B,C,D) + E + W[${step}] + K[${Math.floor(step / 20)}]</span>
+            </div>
+        </div>
+    `;
+}
+
+// Display final hash with intermediate values
+function displayFinalHash(hash, intermediateHashes = []) {
+    const hexHash = hash.map(h => toHex(h)).join('');
+    const binHash = hash.map(h => toBinary(h)).join('');
+    const bytes = [];
+    
+    for (let i = 0; i < 5; i++) {
+        bytes.push(...intToBytes(hash[i]));
+    }
+    
+    const base64Hash = bytesToBase64(bytes);
+    
+    document.getElementById('hexOutput').textContent = hexHash;
+    document.getElementById('binaryOutput').textContent = formatBinaryDisplay(binHash);
+    document.getElementById('base64Output').textContent = base64Hash;
+    
+    // Add intermediate hash values if available
+    if (intermediateHashes.length > 0) {
+        displayIntermediateHashes(intermediateHashes, hash);
+    }
+}
+
+// Display intermediate hash values
+function displayIntermediateHashes(intermediateHashes, finalHash) {
+    // Create container for intermediate hashes if it doesn't exist
+    if (!document.querySelector('.intermediate-hashes')) {
+        const container = document.createElement('div');
+        container.className = 'intermediate-hashes';
+        container.innerHTML = '<h3>Intermediate Hash Values Per Block</h3>';
+        document.querySelector('.output-section').appendChild(container);
+    }
+    
+    const container = document.querySelector('.intermediate-hashes');
+    container.innerHTML = '<h3>Intermediate Hash Values Per Block</h3>';
+    
+    // Display each intermediate hash
+    intermediateHashes.forEach((hash, index) => {
+        const hashDiv = document.createElement('div');
+        hashDiv.className = 'intermediate-hash';
+        
+        const hexHash = hash.map(h => toHex(h)).join('');
+        
+        hashDiv.innerHTML = `
+            <div class="hash-index">CV<sub>${index}</sub>:</div>
+            <div class="hash-value">${hexHash}</div>
+        `;
+        
+        container.appendChild(hashDiv);
+    });
+    
+    // Add final hash explanation
+    const finalDiv = document.createElement('div');
+    finalDiv.className = 'final-hash-explanation';
+    finalDiv.innerHTML = `
+        <div class="explanation-title">Final Hash Computation:</div>
+        <div class="explanation-content">
+            H0 = ${toHex(finalHash[0])}<br>
+            H1 = ${toHex(finalHash[1])}<br>
+            H2 = ${toHex(finalHash[2])}<br>
+            H3 = ${toHex(finalHash[3])}<br>
+            H4 = ${toHex(finalHash[4])}<br>
+            <div class="final-result">
+                Final Hash = H0 || H1 || H2 || H3 || H4 = ${finalHash.map(h => toHex(h)).join('')}
+            </div>
+        </div>
+    `;
+    
+    container.appendChild(finalDiv);
+}
+// Part 5: Event Handlers & Initialization
+
+// Handle calculation button click
+function handleCalculate() {
+    const messageInput = document.getElementById('messageInput');
+    const errorElement = document.getElementById('inputError');
+    
+    currentMessage = messageInput.value;
+    if (!currentMessage) {
+        errorElement.textContent = 'Please enter a message';
+        return;
+    }
+    
+    clearDisplays();
+    errorElement.textContent = '';
+    
+    try {
+        const result = calculateSHA1(currentMessage);
+        
+        // Display input and padding information
+        displayInputInfo(result.messageBytes);
+        displayPaddingInfo(result.messageBytes, result.paddedBytes);
+        
+        // Display message schedule
+        displayMessageSchedule(0);
+        
+        // Initialize compression display
+        currentStep = 0;
+        document.getElementById('stepSlider').value = 0;
+        document.getElementById('currentStep').textContent = 'Step: 0';
+        displayCompressionStep(0);
+        
+        // Display final hash
+        displayFinalHash(result.hash);
+        
+    } catch (error) {
+        errorElement.textContent = 'Error: ' + error.message;
+    }
+}
+
+// Handle schedule navigation
+function navigateSchedule(direction) {
+    const current = parseInt(document.getElementById('scheduleRange').textContent.match(/\d+/)[0]);
+    const itemsPerPage = 16;
+    let newStart;
+    
+    if (direction === 'next') {
+        newStart = Math.min(current + itemsPerPage, 80 - itemsPerPage);
+    } else {
+        newStart = Math.max(current - itemsPerPage, 0);
+    }
+    
+    displayMessageSchedule(newStart);
+}
+
+// Handle compression step slider
+function handleStepChange(value) {
+    currentStep = parseInt(value);
+    document.getElementById('currentStep').textContent = `Step: ${currentStep}`;
+    displayCompressionStep(currentStep);
+}
+
+// Animation functions
+function playAnimation() {
+    if (animationInterval) {
+        clearInterval(animationInterval);
+    }
+    
+    animationInterval = setInterval(() => {
+        if (currentStep < 80) {
+            currentStep++;
+            document.getElementById('stepSlider').value = currentStep;
+            document.getElementById('currentStep').textContent = `Step: ${currentStep}`;
+            displayCompressionStep(currentStep);
+        } else {
+            pauseAnimation();
+        }
+    }, 500); // Half second per step
+    
+    isPlaying = true;
+    document.getElementById('playPauseBtn').textContent = 'Pause';
+}
+
+// Part 3: Improved Core SHA-1 Functions
+
+// Calculate SHA-1 hash with tracking of intermediate values
+function calculateSHA1(message) {
+    // Reset hash values
+    h = [H0, H1, H2, H3, H4];
+    
+    // Convert string to bytes and pad
+    const messageBytes = stringToBytes(message);
+    const paddedBytes = padMessage(messageBytes);
+    
+    // Process each 512-bit block
+    const blocks = [];
+    const intermediateHashes = []; // Store intermediate hash values
+    
+    // Save initial hash values
+    intermediateHashes.push([...h]);
+    
+    for (let i = 0; i < paddedBytes.length; i += 64) {
+        const block = paddedBytes.slice(i, i + 64);
+        blocks.push(block);
+        
+        const { states, w } = compress(block);
+        compressionStates = states;
+        messageSchedule = w;
+        
+        // Store intermediate hash after each block
+        if (i + 64 < paddedBytes.length) {
+            intermediateHashes.push([...h]);
+        }
+    }
+    
+    // Add final hash
+    intermediateHashes.push([...h]);
+    
+    return {
+        messageBytes,
+        paddedBytes,
+        blocks,
+        hash: h,
+        states: compressionStates,
+        schedule: messageSchedule,
+        intermediateHashes: intermediateHashes
+    };
+}
+
+// Export all compression states to a table format
+function exportCompressionTable() {
+    if (!compressionStates || compressionStates.length === 0) {
+        return "No compression data available. Please calculate a hash first.";
+    }
+    
+    let table = "Step,A,B,C,D,E,TEMP,f(B,C,D),K,W[t]\n";
+    
+    for (let i = 0; i < compressionStates.length; i++) {
+        const state = compressionStates[i];
+        const step = state.step;
+        
+        if (step === -1) {
+            table += `Initial,${toHex(state.a)},${toHex(state.b)},${toHex(state.c)},${toHex(state.d)},${toHex(state.e)},,,,\n`;
+        } else {
+            const roundInfo = getRoundInfo(step);
+            table += `${step},${toHex(state.a)},${toHex(state.b)},${toHex(state.c)},${toHex(state.d)},${toHex(state.e)},` +
+                `${toHex(state.temp)},${toHex(state.f)},${toHex(roundInfo.k)},${toHex(state.w)}\n`;
+        }
+    }
+    
+    return table;
+}
+
+// Add optimization for adding export table button
+function addExportTableButton() {
+    const button = document.createElement('button');
+    button.id = 'exportTableBtn';
+    button.textContent = 'Export All 80 Rounds';
+    button.className = 'export-btn';
+    
+    button.addEventListener('click', function() {
+        const table = exportCompressionTable();
+        
+        // Create a download link
+        const a = document.createElement('a');
+        const blob = new Blob([table], {type: 'text/csv'});
+        a.href = URL.createObjectURL(blob);
+        a.download = 'sha1_compression_steps.csv';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        
+        showNotification('Table exported as CSV!');
+    });
+    
+    // Add to the UI
+    document.querySelector('.compression-controls').appendChild(button);
+}
+
+// Add button to show registers at specific step
+function addStepLookupButton() {
+    const inputGroup = document.createElement('div');
+    inputGroup.className = 'step-lookup';
+    
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.id = 'stepLookup';
+    input.min = 0;
+    input.max = 79;
+    input.value = 0;
+    input.placeholder = 'Step (0-79)';
+    
+    const button = document.createElement('button');
+    button.textContent = 'Show Registers at Step';
+    button.id = 'lookupStepBtn';
+    
+    inputGroup.appendChild(input);
+    inputGroup.appendChild(button);
+    
+    // Add event listener
+    button.addEventListener('click', function() {
+        const step = parseInt(document.getElementById('stepLookup').value);
+        if (step >= 0 && step <= 79) {
+            document.getElementById('stepSlider').value = step + 1; // +1 because states has initial state at 0
+            handleStepChange(step + 1);
+        } else {
+            showNotification('Please enter a step between 0 and 79.');
+        }
+    });
+    
+    // Add to the UI
+    document.querySelector('.compression-controls').appendChild(inputGroup);
+}
+
+// Add toggle for showing intermediate values
+function addIntermediateToggle() {
+    const toggleContainer = document.createElement('div');
+    toggleContainer.className = 'intermediate-toggle';
+    
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.id = 'showIntermediateToggle';
+    
+    const label = document.createElement('label');
+    label.htmlFor = 'showIntermediateToggle';
+    label.textContent = 'Show Intermediate Hash Values';
+    
+    toggleContainer.appendChild(checkbox);
+    toggleContainer.appendChild(label);
+    
+    checkbox.addEventListener('change', function() {
+        const intermediateSection = document.querySelector('.intermediate-hashes');
+        if (intermediateSection) {
+            intermediateSection.style.display = this.checked ? 'block' : 'none';
+        } else if (this.checked && compressionStates.length > 0) {
+            // Recalculate to show intermediate values
+            handleCalculate();
+        }
+    });
+    
+    // Add to the UI
+    document.querySelector('.output-section').insertBefore(
+        toggleContainer, 
+        document.querySelector('.output-display')
+    );
+}
+
+function pauseAnimation() {
+    if (animationInterval) {
+        clearInterval(animationInterval);
+        animationInterval = null;
+    }
+    
+    isPlaying = false;
+    document.getElementById('playPauseBtn').textContent = 'Play';
+}
+
+function toggleAnimation() {
+    if (isPlaying) {
+        pauseAnimation();
+    } else {
+        playAnimation();
+    }
+}
+
+// Set up event listeners
+function setupEventListeners() {
+    // Calculate button
+    document.getElementById('calculateBtn').addEventListener('click', handleCalculate);
+    
+    // Handle enter key in input
+    document.getElementById('messageInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            handleCalculate();
+        }
+    });
+    
+    // Schedule navigation
+    document.getElementById('prevScheduleBtn').addEventListener('click', function() {
+        navigateSchedule('prev');
+    });
+    
+    document.getElementById('nextScheduleBtn').addEventListener('click', function() {
+        navigateSchedule('next');
+    });
+    
+    // Compression step slider
+    document.getElementById('stepSlider').addEventListener('input', function() {
+        handleStepChange(this.value);
+    });
+    
+    // Play/Pause button
+    document.getElementById('playPauseBtn').addEventListener('click', toggleAnimation);
+    
+    // Copy buttons
+    document.getElementById('copyHexBtn').addEventListener('click', function() {
+        const hexOutput = document.getElementById('hexOutput').textContent;
+        copyToClipboard(hexOutput);
+    });
+    
+    document.getElementById('copyBinaryBtn').addEventListener('click', function() {
+        const binaryOutput = document.getElementById('binaryOutput').textContent;
+        copyToClipboard(binaryOutput);
+    });
+    
+    document.getElementById('copyBase64Btn').addEventListener('click', function() {
+        const base64Output = document.getElementById('base64Output').textContent;
+        copyToClipboard(base64Output);
+    });
+}
+
+// Initialize the application
+function initialize() {
+    setupEventListeners();
+    clearDisplays();
+    
+    // Set default example if needed
+    document.getElementById('messageInput').value = 'We are students';
+}
+
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', initialize);
+   </script>
+</body>
+</html>

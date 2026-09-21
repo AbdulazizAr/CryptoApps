@@ -1,0 +1,12 @@
+{
+  "name": "cryptoapps",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Educational browser cryptography tools",
+  "scripts": {
+    "test": "node --test tests/crypto.test.cjs"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

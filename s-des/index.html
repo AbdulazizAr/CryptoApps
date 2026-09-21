@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Author: Abdualziz Alrabeei/ spring.2025 Tools: (Chatgpt +Claude)-->
+    <!--Good luck!-->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S-DES Encryption and Decryption Tool</title>
+</head>
+<style>
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background-color: #f5f5f5;
+        color: #333;
+    }
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background-color: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    h1, h2, h3 {
+        color: #2c3e50;
+    }
+    .section {
+        margin-bottom: 30px;
+        padding: 15px;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+        border: 1px solid #eaeaea;
+    }
+    .form-group {
+        margin-bottom: 15px;
+    }
+    label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
+    input[type="text"], select {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-sizing: border-box;
+        font-family: monospace;
+    }
+    button {
+        background-color: #3498db;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        margin-right: 10px;
+    }
+    button:hover {
+        background-color: #2980b9;
+    }
+    .step-container {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        margin-top: 10px;
+    }
+    .step-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .step-label {
+        min-width: 140px;
+        font-weight: bold;
+    }
+    .step-input {
+        flex: 1;
+    }
+    .round-container {
+        border: 1px solid #ddd;
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 5px;
+        background-color: white;
+    }
+    .round-title {
+        margin-top: 0;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 10px;
+        color: #3498db;
+    }
+    .left-side {
+        color: #e74c3c;
+        background-color: #fef5f5;
+    }
+    .right-side {
+        color: #27ae60;
+        background-color: #f2faf5;
+    }
+    .highlighted {
+        box-shadow: 0 0 5px 2px #f39c12;
+    }
+    .toggle-section {
+        cursor: pointer;
+        user-select: none;
+    }
+    .toggle-section::after {
+        content: " ▼";
+        font-size: 12px;
+    }
+    .toggle-section.collapsed::after {
+        content: " ▶";
+    }
+    .collapsible {
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+        max-height: 1000px;
+    }
+    .collapsible.collapsed {
+        max-height: 0;
+    }
+    .format-toggle {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+    .format-btn {
+        background-color: #eee;
+        color: #333;
+        border: 1px solid #ddd;
+        padding: 5px 10px;
+        border-radius: 3px;
+        cursor: pointer;
+    }
+    .format-btn.active {
+        background-color: #3498db;
+        color: white;
+        border-color: #2980b9;
+    }
+    .explanation {
+        background-color: #f1f9ff;
+        padding: 10px;
+        border-radius: 5px;
+        margin-bottom: 15px;
+        border-left: 3px solid #3498db;
+    }
+</style>
+<body>
+<nav style="margin: 0 0 20px; font: 14px system-ui"><a href="../index.html">← All CryptoApps</a> · Educational use only</nav>
+    <div class="container">
+        <h1>Simple DES (S-DES) Encryption and Decryption Tool</h1>
+        
+        <div>
+            <p>This tool implements the Simplified DES (S-DES) algorithm, showing every step of the process.</p>
+        </div>
+
+        <div>
+            <h2>Input Parameters</h2>
+            <div>
+                <div>
+                    <!-- Replaced dropdown with two buttons -->
+                    <button id="encrypt-btn">Encrypt</button>
+                    <button id="decrypt-btn">Decrypt</button>
+                </div>
+                
+                <div>
+                    <label for="input-text">Plaintext/Ciphertext (8 bits):</label>
+                    <input type="text" id="input-text" placeholder="Enter 8 bits, decimal, or hex value">
+                    <span id="input-text-counter">0/8</span>
+                </div>
+                
+                <div>
+                    <label for="input-key">Key (10 bits):</label>
+                    <input type="text" id="input-key" placeholder="Enter 10 bits, decimal, or hex value">
+                    <span id="input-key-counter">0/10</span>
+                </div>
+                
+                <button id="reset-btn">Reset All</button>
+            </div>
+        </div>
+        
+        <div>
+            <h2>Key Generation</h2>
+            <div id="key-generation">
+                <div>
+                    <div>
+                        <label>Initial Key (K):</label>
+                        <input type="text" class="key-field" id="key-initial" readonly>
+                    </div>
+                    <div>
+                        <label>After P10:</label>
+                        <input type="text" class="key-field" id="key-p10" readonly>
+                    </div>
+                    <div>
+                        <label>Split:</label>
+                        <input type="text" class="key-field left-side" id="key-split-left" readonly>
+                        <input type="text" class="key-field right-side" id="key-split-right" readonly>
+                    </div>
+                    <div>
+                        <label>LS-1:</label>
+                        <input type="text" class="key-field left-side" id="key-ls1-left" readonly>
+                        <input type="text" class="key-field right-side" id="key-ls1-right" readonly>
+                    </div>
+                    <div>
+                        <label>Key 1 (K1):</label>
+                        <input type="text" class="key-field" id="key-k1" readonly>
+                    </div>
+                    <div>
+                        <label>LS-2:</label>
+                        <input type="text" class="key-field left-side" id="key-ls2-left" readonly>
+                        <input type="text" class="key-field right-side" id="key-ls2-right" readonly>
+                    </div>
+                    <div>
+                        <label>Key 2 (K2):</label>
+                        <input type="text" class="key-field" id="key-k2" readonly>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div>
+            <h2>Initial Processing</h2>
+            <div id="initial-processing">
+                <div>
+                    <div>
+                        <label>Input:</label>
+                        <input type="text" id="initial-input" readonly>
+                    </div>
+                    <div>
+                        <label>After IP:</label>
+                        <input type="text" id="after-ip" readonly>
+                    </div>
+                    <div>
+                        <label>Split:</label>
+                        <input type="text" class="left-side" id="ip-left" readonly>
+                        <input type="text" class="right-side" id="ip-right" readonly>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div>
+            <h2>Round 1</h2>
+            <div id="round1">
+                <div>
+                    <div>
+                        <label>Input L0:</label>
+                        <input type="text" class="left-side editable" id="round1-input-left">
+                        <span id="round1-input-left-counter">0/4</span>
+                    </div>
+                    <div>
+                        <label>Input R0:</label>
+                        <input type="text" class="right-side editable" id="round1-input-right">
+                        <span id="round1-input-right-counter">0/4</span>
+                    </div>
+                    <div>
+                        <label>Expansion E(R0):</label>
+                        <input type="text" id="round1-expansion" readonly>
+                    </div>
+                    <div>
+                        <label>Key K1:</label>
+                        <input type="text" id="round1-key" readonly>
+                    </div>
+                    <div>
+                        <label>E(R0) ⊕ K1:</label>
+                        <input type="text" id="round1-xor" readonly>
+                    </div>
+                    <div>
+                        <label>Split:</label>
+                        <input type="text" class="left-side" id="round1-xor-left" readonly>
+                        <input type="text" class="right-side" id="round1-xor-right" readonly>
+                    </div>
+                    <div>
+                        <label>S-Box S0:</label>
+                        <input type="text" class="left-side" id="round1-s0" readonly>
+                    </div>
+                    <div>
+                        <label>S-Box S1:</label>
+                        <input type="text" class="right-side" id="round1-s1" readonly>
+                    </div>
+                    <div>
+                        <label>S0S1 Combined:</label>
+                        <input type="text" id="round1-s-combined" readonly>
+                    </div>
+                    <div>
+                        <label>After P4:</label>
+                        <input type="text" id="round1-p4" readonly>
+                    </div>
+                    <div>
+                        <label>L0 ⊕ P4:</label>
+                        <input type="text" id="round1-output-left" readonly>
+                    </div>
+                    <div>
+                        <label>Output L1:</label>
+                        <input type="text" class="left-side editable" id="round1-l1">
+                        <span id="round1-l1-counter">0/4</span>
+                    </div>
+                    <div>
+                        <label>Output R1:</label>
+                        <input type="text" class="right-side editable" id="round1-r1">
+                        <span id="round1-r1-counter">0/4</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div>
+            <h2>Round 2</h2>
+            <div id="round2">
+                <div>
+                    <div>
+                        <label>Input L1:</label>
+                        <input type="text" class="left-side editable" id="round2-input-left">
+                        <span id="round2-input-left-counter">0/4</span>
+                    </div>
+                    <div>
+                        <label>Input R1:</label>
+                        <input type="text" class="right-side editable" id="round2-input-right">
+                        <span id="round2-input-right-counter">0/4</span>
+                    </div>
+                    <div>
+                        <label>Expansion E(R1):</label>
+                        <input type="text" id="round2-expansion" readonly>
+                    </div>
+                    <div>
+                        <label>Key K2:</label>
+                        <input type="text" id="round2-key" readonly>
+                    </div>
+                    <div>
+                        <label>E(R1) ⊕ K2:</label>
+                        <input type="text" id="round2-xor" readonly>
+                    </div>
+                    <div>
+                        <label>Split:</label>
+                        <input type="text" class="left-side" id="round2-xor-left" readonly>
+                        <input type="text" class="right-side" id="round2-xor-right" readonly>
+                    </div>
+                    <div>
+                        <label>S-Box S0:</label>
+                        <input type="text" class="left-side" id="round2-s0" readonly>
+                    </div>
+                    <div>
+                        <label>S-Box S1:</label>
+                        <input type="text" class="right-side" id="round2-s1" readonly>
+                    </div>
+                    <div>
+                        <label>S0S1 Combined:</label>
+                        <input type="text" id="round2-s-combined" readonly>
+                    </div>
+                    <div>
+                        <label>After P4:</label>
+                        <input type="text" id="round2-p4" readonly>
+                    </div>
+                    <div>
+                        <label>L1 ⊕ P4:</label>
+                        <input type="text" id="round2-output-left" readonly>
+                    </div>
+                    <div>
+                        <label>Output L2:</label>
+                        <input type="text" class="left-side editable" id="round2-l2">
+                        <span id="round2-l2-counter">0/4</span>
+                    </div>
+                    <div>
+                        <label>Output R2:</label>
+                        <input type="text" class="right-side editable" id="round2-r2">
+                        <span id="round2-r2-counter">0/4</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div>
+            <h2>Final Processing</h2>
+            <div id="final-processing">
+                <div>
+                    <div>
+                        <label>Combined:</label>
+                        <input type="text" class="editable" id="final-combined">
+                        <span id="final-combined-counter">0/8</span>
+                    </div>
+                    <div>
+                        <label>After IP⁻¹:</label>
+                        <input type="text" id="final-output" readonly>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div>
+            <h2>Result</h2>
+            <div>
+                <label id="result-label">Result:</label>
+                <input type="text" id="result" readonly>
+            </div>
+            <div>
+                <label>Output Format:</label>
+                <select id="output-format">
+                    <option value="binary">Binary</option>
+                    <option value="decimal">Decimal</option>
+                    <option value="hex">Hexadecimal</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <script>
+       // S-DES Constants and Tables
+const IP = [2, 6, 3, 1, 4, 8, 5, 7];
+const IP_INVERSE = [4, 1, 3, 5, 7, 2, 8, 6];
+const P10 = [3, 5, 2, 7, 4, 10, 1, 9, 8, 6];
+const P8 = [6, 3, 7, 4, 8, 5, 10, 9];
+const P4 = [2, 4, 3, 1];
+const EP = [4, 1, 2, 3, 2, 3, 4, 1];
+
+const S0 = [
+    [1, 0, 3, 2],
+    [3, 2, 1, 0],
+    [0, 2, 1, 3],
+    [3, 1, 3, 2]
+];
+
+const S1 = [
+    [0, 1, 2, 3],
+    [2, 0, 1, 3],
+    [3, 0, 1, 0],
+    [2, 1, 0, 3]
+];
+
+// Utility functions
+function permute(input, table) {
+    let result = '';
+    for (let i = 0; i < table.length; i++) {
+        result += input.charAt(table[i] - 1);
+    }
+    return result;
+}
+
+function leftShift(bits, positions) {
+    return bits.substring(positions) + bits.substring(0, positions);
+}
+
+function xor(a, b) {
+    let result = '';
+    for (let i = 0; i < a.length; i++) {
+        result += (a[i] === b[i]) ? '0' : '1';
+    }
+    return result;
+}
+
+function sBox(input, sbox) {
+    const row = parseInt(input.charAt(0) + input.charAt(3), 2);
+    const col = parseInt(input.charAt(1) + input.charAt(2), 2);
+    const value = sbox[row][col];
+    return value.toString(2).padStart(2, '0');
+}
+
+// Format conversion utilities
+function detectInputFormat(input) {
+    if (/^[01]+$/.test(input)) {
+        return 'binary';
+    } else if (/^[0-9]+$/.test(input)) {
+        return 'decimal';
+    } else if (/^[0-9A-Fa-f]+$/.test(input)) {
+        return 'hex';
+    }
+    return 'unknown';
+}
+
+function convertToBinary(input, requiredLength) {
+    const format = detectInputFormat(input);
+    let binary = '';
+    
+    try {
+        switch (format) {
+            case 'binary':
+                binary = input;
+                break;
+            case 'decimal':
+                binary = parseInt(input, 10).toString(2);
+                break;
+            case 'hex':
+                binary = parseInt(input, 16).toString(2);
+                break;
+            default:
+                throw new Error('Unknown input format');
+        }
+        
+        // Pad to required length or truncate if too long
+        if (binary.length < requiredLength) {
+            binary = binary.padStart(requiredLength, '0');
+        } else if (binary.length > requiredLength) {
+            binary = binary.slice(-requiredLength);
+        }
+        
+        return binary;
+    } catch (error) {
+        console.error('Conversion error:', error);
+        return ''.padStart(requiredLength, '0');
+    }
+}
+
+function formatOutput(binary, format) {
+    if (!binary) return '';
+    
+    try {
+        switch (format) {
+            case 'binary':
+                return binary;
+            case 'decimal':
+                return parseInt(binary, 2).toString(10);
+            case 'hex':
+                return parseInt(binary, 2).toString(16).toUpperCase();
+            default:
+                return binary;
+        }
+    } catch (error) {
+        console.error('Output formatting error:', error);
+        return binary;
+    }
+}
+
+// State management
+let currentState = {};
+let modifiedFields = new Set();
+let currentOperation = 'encrypt';
+
+// Setup function for the tool
+function initializeTool() {
+    // Load saved state from localStorage
+    loadStateFromLocalStorage();
+    
+    // Set up event listeners for encryption/decryption buttons
+    document.getElementById('encrypt-btn').addEventListener('click', function() {
+        currentOperation = 'encrypt';
+        processSDES();
+    });
+    
+    document.getElementById('decrypt-btn').addEventListener('click', function() {
+        currentOperation = 'decrypt';
+        processSDES();
+    });
+    
+    document.getElementById('reset-btn').addEventListener('click', resetAll);
+    document.getElementById('output-format').addEventListener('change', updateOutputFormat);
+    
+    // Input field changes
+    document.getElementById('input-text').addEventListener('input', function() {
+        const value = this.value;
+        updateBitCounter('input-text', value, 8);
+        if (value) {
+            document.getElementById('initial-input').value = convertToBinary(value, 8);
+        } else {
+            document.getElementById('initial-input').value = '';
+        }
+        saveStateToLocalStorage();
+    });
+    
+    document.getElementById('input-key').addEventListener('input', function() {
+        const value = this.value;
+        updateBitCounter('input-key', value, 10);
+        if (value) {
+            document.getElementById('key-initial').value = convertToBinary(value, 10);
+        } else {
+            document.getElementById('key-initial').value = '';
+        }
+        saveStateToLocalStorage();
+    });
+    
+    // Set up editable fields event listeners
+    setupEditableFields();
+    
+    // Set up bit counters
+    setupBitCounters();
+    
+    // If there are initial values in the inputs, process them
+    const initialText = document.getElementById('input-text').value;
+    const initialKey = document.getElementById('input-key').value;
+    
+    if (initialText && initialKey) {
+        processSDES();
+    }
+}
+
+function setupEditableFields() {
+    const editableFields = document.querySelectorAll('input.editable');
+    
+    editableFields.forEach(field => {
+        field.addEventListener('input', function() {
+            // Mark this field as modified
+            modifiedFields.add(this.id);
+            updateBitCounter(this.id, this.value, getExpectedBitLength(this.id));
+            
+            // Highlight the modified field
+            this.classList.add('user-modified');
+            
+            // Process only from this point forward
+            processFromPoint(this.id);
+            
+            // Save state to localStorage
+            saveStateToLocalStorage();
+        });
+    });
+}
+
+function setupBitCounters() {
+    // Initialize bit counters for all fields with counters
+    document.querySelectorAll('[id$="-counter"]').forEach(counter => {
+        const fieldId = counter.id.replace('-counter', '');
+        const field = document.getElementById(fieldId);
+        if (field) {
+            updateBitCounter(fieldId, field.value, getExpectedBitLength(fieldId));
+        }
+    });
+}
+
+function getExpectedBitLength(fieldId) {
+    // Determine expected bit length based on field ID
+    if (fieldId === 'input-text' || fieldId === 'initial-input' || fieldId === 'final-combined') {
+        return 8;
+    } else if (fieldId === 'input-key' || fieldId === 'key-initial') {
+        return 10;
+    } else if (fieldId.includes('key-k')) {
+        return 8;
+    } else {
+        // Rounds input/output are 4-bit
+        return 4;
+    }
+}
+
+function updateBitCounter(fieldId, value, expectedLength) {
+    const counterElement = document.getElementById(`${fieldId}-counter`);
+    if (counterElement) {
+        const binaryValue = convertToBinary(value, expectedLength);
+        counterElement.textContent = `${binaryValue.length}/${expectedLength}`;
+        
+        // Highlight if incorrect length
+        if (binaryValue.length !== expectedLength && value.trim() !== '') {
+            counterElement.classList.add('invalid-length');
+        } else {
+            counterElement.classList.remove('invalid-length');
+        }
+    }
+}
+
+function processFromPoint(startFieldId) {
+    // Determine which process to run based on the modified field
+    if (startFieldId.startsWith('round1-input')) {
+        processRound1();
+        processRound2();
+        processFinalOutput();
+    } else if (startFieldId.startsWith('round1-l1') || startFieldId.startsWith('round1-r1')) {
+        processRound2();
+        processFinalOutput();
+    } else if (startFieldId.startsWith('round2-input')) {
+        processRound2();
+        processFinalOutput();
+    } else if (startFieldId.startsWith('round2-l2') || startFieldId.startsWith('round2-r2')) {
+        processFinalOutput();
+    } else if (startFieldId === 'final-combined') {
+        processFinalInversePermutation();
+    }
+    
+    // Update output format
+    updateOutputFormat();
+}
+
+function updateState(id, value) {
+    // Don't update if this field has been modified by the user
+    if (modifiedFields.has(id)) {
+        return;
+    }
+    
+    currentState[id] = value;
+    const element = document.getElementById(id);
+    if (element) {
+        element.value = value;
+        updateBitCounter(id, value, getExpectedBitLength(id));
+    }
+}
+
+function updateOutputFormat() {
+    const format = document.getElementById('output-format').value;
+    const binaryOutput = currentState['final-output'] || '';
+    
+    if (binaryOutput) {
+        const formattedOutput = formatOutput(binaryOutput, format);
+        updateState('result', formattedOutput);
+    }
+}
+
+// Process functions broken down by stages
+function processKeyGeneration() {
+    const binaryKey = convertToBinary(document.getElementById('input-key').value, 10);
+    updateState('key-initial', binaryKey);
+    
+    const keyP10 = permute(binaryKey, P10);
+    updateState('key-p10', keyP10);
+    
+    const keyLeftHalf = keyP10.substring(0, 5);
+    const keyRightHalf = keyP10.substring(5);
+    updateState('key-split-left', keyLeftHalf);
+    updateState('key-split-right', keyRightHalf);
+    
+    const ls1Left = leftShift(keyLeftHalf, 1);
+    const ls1Right = leftShift(keyRightHalf, 1);
+    updateState('key-ls1-left', ls1Left);
+    updateState('key-ls1-right', ls1Right);
+    
+    const combinedLS1 = ls1Left + ls1Right;
+    const key1 = permute(combinedLS1, P8);
+    updateState('key-k1', key1);
+    
+    const ls2Left = leftShift(ls1Left, 2);
+    const ls2Right = leftShift(ls1Right, 2);
+    updateState('key-ls2-left', ls2Left);
+    updateState('key-ls2-right', ls2Right);
+    
+    const combinedLS2 = ls2Left + ls2Right;
+    const key2 = permute(combinedLS2, P8);
+    updateState('key-k2', key2);
+}
+
+function processInitialPermutation() {
+    const binaryText = convertToBinary(document.getElementById('input-text').value, 8);
+    updateState('initial-input', binaryText);
+    
+    const afterIP = permute(binaryText, IP);
+    updateState('after-ip', afterIP);
+    
+    const ipLeft = afterIP.substring(0, 4);
+    const ipRight = afterIP.substring(4);
+    updateState('ip-left', ipLeft);
+    updateState('ip-right', ipRight);
+    
+    // Set values for round 1 input unless they've been modified
+    updateState('round1-input-left', ipLeft);
+    updateState('round1-input-right', ipRight);
+}
+
+function processRound1() {
+    // Get keys based on operation mode
+    const key1 = document.getElementById(currentOperation === 'encrypt' ? 'key-k1' : 'key-k2').value;
+    updateState('round1-key', key1);
+    
+    // Get round1 inputs (they may have been manually modified)
+    const round1Left = document.getElementById('round1-input-left').value;
+    const round1Right = document.getElementById('round1-input-right').value;
+    
+    const round1Expansion = permute(round1Right, EP);
+    updateState('round1-expansion', round1Expansion);
+    
+    const round1Xor = xor(round1Expansion, key1);
+    updateState('round1-xor', round1Xor);
+    
+    const round1XorLeft = round1Xor.substring(0, 4);
+    const round1XorRight = round1Xor.substring(4);
+    updateState('round1-xor-left', round1XorLeft);
+    updateState('round1-xor-right', round1XorRight);
+    
+    const round1S0Result = sBox(round1XorLeft, S0);
+    const round1S1Result = sBox(round1XorRight, S1);
+    updateState('round1-s0', round1S0Result);
+    updateState('round1-s1', round1S1Result);
+    
+    const round1SCombined = round1S0Result + round1S1Result;
+    updateState('round1-s-combined', round1SCombined);
+    
+    const round1P4 = permute(round1SCombined, P4);
+    updateState('round1-p4', round1P4);
+    
+    const round1OutputLeft = xor(round1Left, round1P4);
+    updateState('round1-output-left', round1OutputLeft);
+    
+    // Set values for round 1 output unless they've been modified
+    updateState('round1-l1', round1Right);
+    updateState('round1-r1', round1OutputLeft);
+    
+    // Set values for round 2 input unless they've been modified
+    updateState('round2-input-left', round1Right);
+    updateState('round2-input-right', round1OutputLeft);
+}
+
+function processRound2() {
+    // Get keys based on operation mode
+    const key2 = document.getElementById(currentOperation === 'encrypt' ? 'key-k2' : 'key-k1').value;
+    updateState('round2-key', key2);
+    
+    // Get round2 inputs (they may have been manually modified)
+    const round2Left = document.getElementById('round2-input-left').value;
+    const round2Right = document.getElementById('round2-input-right').value;
+    
+    const round2Expansion = permute(round2Right, EP);
+    updateState('round2-expansion', round2Expansion);
+    
+    const round2Xor = xor(round2Expansion, key2);
+    updateState('round2-xor', round2Xor);
+    
+    const round2XorLeft = round2Xor.substring(0, 4);
+    const round2XorRight = round2Xor.substring(4);
+    updateState('round2-xor-left', round2XorLeft);
+    updateState('round2-xor-right', round2XorRight);
+    
+    const round2S0Result = sBox(round2XorLeft, S0);
+    const round2S1Result = sBox(round2XorRight, S1);
+    updateState('round2-s0', round2S0Result);
+    updateState('round2-s1', round2S1Result);
+    
+    const round2SCombined = round2S0Result + round2S1Result;
+    updateState('round2-s-combined', round2SCombined);
+    
+    const round2P4 = permute(round2SCombined, P4);
+    updateState('round2-p4', round2P4);
+    
+    const round2OutputLeft = xor(round2Left, round2P4);
+    updateState('round2-output-left', round2OutputLeft);
+    
+    // Set values for round 2 output unless they've been modified
+    updateState('round2-l2', round2OutputLeft);
+    updateState('round2-r2', round2Right);
+    
+    // For final combined output
+    updateState('final-combined', round2OutputLeft + round2Right);
+}
+
+function processFinalOutput() {
+    // Use the modified combined output if it exists, otherwise use the calculated one
+    let finalCombined;
+    if (modifiedFields.has('final-combined')) {
+        finalCombined = document.getElementById('final-combined').value;
+    } else {
+        finalCombined = document.getElementById('round2-l2').value + document.getElementById('round2-r2').value;
+    }
+    updateState('final-combined', finalCombined);
+    
+    processFinalInversePermutation();
+}
+
+function processFinalInversePermutation() {
+    const finalCombined = document.getElementById('final-combined').value;
+    const finalOutput = permute(finalCombined, IP_INVERSE);
+    updateState('final-output', finalOutput);
+    
+    // Update the final result
+    const outputFormat = document.getElementById('output-format').value;
+    updateState('result', formatOutput(finalOutput, outputFormat));
+    
+    // Update result label based on operation
+    document.getElementById('result-label').textContent = 
+        currentOperation === 'encrypt' ? 'Ciphertext:' : 'Plaintext:';
+}
+
+function processSDES() {
+    // Run the entire encryption/decryption process
+    processKeyGeneration();
+    processInitialPermutation();
+    processRound1();
+    processRound2();
+    processFinalOutput();
+    
+    // Save state to localStorage
+    saveStateToLocalStorage();
+}
+
+function resetAll() {
+    // Clear all input fields except the main input and key
+    const inputText = document.getElementById('input-text').value;
+    const inputKey = document.getElementById('input-key').value;
+    
+    // Reset modified fields tracker
+    modifiedFields.clear();
+    
+    // Remove highlighting from all fields
+    document.querySelectorAll('input.user-modified').forEach(field => {
+        field.classList.remove('user-modified');
+    });
+    
+    // Clear all fields
+    const fields = document.querySelectorAll('input[type="text"]:not(#input-text):not(#input-key)');
+    fields.forEach(field => {
+        field.value = '';
+    });
+    
+    // Reset state
+    currentState = {};
+    
+    // Restore input and key
+    document.getElementById('input-text').value = inputText;
+    document.getElementById('input-key').value = inputKey;
+    updateBitCounter('input-text', inputText, 8);
+    updateBitCounter('input-key', inputKey, 10);
+    
+    // Reset result label
+    document.getElementById('result-label').textContent = 'Result:';
+    
+    // If inputs are available, reprocess
+    if (inputText && inputKey) {
+        processSDES();
+    }
+    
+    // Save state to localStorage
+    saveStateToLocalStorage();
+}
+
+// Local storage functions
+function saveStateToLocalStorage() {
+    // Save input values and modified fields
+    const stateToSave = {
+        inputText: document.getElementById('input-text').value,
+        inputKey: document.getElementById('input-key').value,
+        modifiedFields: Array.from(modifiedFields),
+        fieldValues: {}
+    };
+    
+    // Save values of modified fields
+    modifiedFields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            stateToSave.fieldValues[fieldId] = field.value;
+        }
+    });
+    
+    localStorage.setItem('sdesState', JSON.stringify(stateToSave));
+}
+
+function loadStateFromLocalStorage() {
+    const savedState = localStorage.getItem('sdesState');
+    if (savedState) {
+        try {
+            const state = JSON.parse(savedState);
+            
+            // Restore input values
+            if (state.inputText) {
+                document.getElementById('input-text').value = state.inputText;
+                updateBitCounter('input-text', state.inputText, 8);
+            }
+            
+            if (state.inputKey) {
+                document.getElementById('input-key').value = state.inputKey;
+                updateBitCounter('input-key', state.inputKey, 10);
+            }
+            
+            // Restore modified fields
+            if (state.modifiedFields && Array.isArray(state.modifiedFields)) {
+                state.modifiedFields.forEach(fieldId => {
+                    modifiedFields.add(fieldId);
+                    const field = document.getElementById(fieldId);
+                    if (field && state.fieldValues && state.fieldValues[fieldId]) {
+                        field.value = state.fieldValues[fieldId];
+                        field.classList.add('user-modified');
+                        updateBitCounter(fieldId, field.value, getExpectedBitLength(fieldId));
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('Error loading state from localStorage:', error);
+        }
+    }
+}
+
+// Initialize the tool when the DOM is loaded
+document.addEventListener('DOMContentLoaded', initializeTool);
+        </script>
+</body>
+</html>

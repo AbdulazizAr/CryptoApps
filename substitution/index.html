@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8">
+  <title>Substitution Cipher Tool</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; max-width: 700px; margin: auto; }
+    textarea, input { width: 100%; padding: 10px; margin: 10px 0; }
+    .label { margin-top: 20px; font-weight: bold; }
+    .output { white-space: pre-wrap; background: #f4f4f4; padding: 10px; border-radius: 5px; }
+  </style>
+</head>
+<body>
+<nav style="margin: 0 0 20px; font: 14px system-ui"><a href="../index.html">← All CryptoApps</a> · Educational use only</nav>
+  <h2>🔁 Substitution Cipher Tool</h2>
+
+  <div class="label">🔤 Custom Alphabet (Index starts from 0):</div>
+  <input type="text" id="customAlphabet" placeholder="Enter custom alphabet"/>
+
+  <div class="label">🔑 Substitution Key (Same length, e.g., A→D, B→K, ...):</div>
+  <input type="text" id="substitutionKey" placeholder="Enter substitution key"/>
+
+  <div class="label">📝 Input Text:</div>
+  <textarea id="inputText" rows="4" placeholder="Enter text to encrypt/decrypt"></textarea>
+
+  <button onclick="encrypt()">🔒 Encrypt</button>
+  <button onclick="decrypt()">🔓 Decrypt</button>
+
+  <div class="label">📄 Output:</div>
+  <div class="output" id="output"></div>
+
+  <script>
+    const alphabetField = document.getElementById('customAlphabet');
+    const keyField = document.getElementById('substitutionKey');
+    const inputField = document.getElementById('inputText');
+    const outputField = document.getElementById('output');
+
+    // Load saved state
+    window.onload = () => {
+      alphabetField.value = localStorage.getItem('customAlphabet') || 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      keyField.value = localStorage.getItem('substitutionKey') || '';
+      inputField.value = localStorage.getItem('inputText') || '';
+    };
+
+    // Auto-save on change
+    [alphabetField, keyField, inputField].forEach(field => {
+      field.addEventListener('input', () => {
+        localStorage.setItem(field.id, field.value);
+      });
+    });
+
+    function encrypt() {
+      const alpha = alphabetField.value;
+      const key = keyField.value;
+      const text = inputField.value;
+      if (alpha.length < 2 || alpha.length !== key.length || new Set(alpha).size !== alpha.length || new Set(key).size !== key.length || [...key].some(c => !alpha.includes(c))) {
+        return outputField.textContent = '❌ Use a unique alphabet and a key that rearranges every alphabet character exactly once.';
+      }
+      const result = [...text].map(c => {
+        const index = alpha.indexOf(c);
+        return index !== -1 ? key[index] : c;
+      }).join('');
+      outputField.textContent = result;
+    }
+
+    function decrypt() {
+      const alpha = alphabetField.value;
+      const key = keyField.value;
+      const text = inputField.value;
+      if (alpha.length < 2 || alpha.length !== key.length || new Set(alpha).size !== alpha.length || new Set(key).size !== key.length || [...key].some(c => !alpha.includes(c))) {
+        return outputField.textContent = '❌ Use a unique alphabet and a key that rearranges every alphabet character exactly once.';
+      }
+      const result = [...text].map(c => {
+        const index = key.indexOf(c);
+        return index !== -1 ? alpha[index] : c;
+      }).join('');
+      outputField.textContent = result;
+    }
+  </script>
+</body>
+</html>

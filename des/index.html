@@ -1,0 +1,1781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DES Encryption and Decryption Tool</title>
+    
+</head>
+<style>
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background-color: #f5f5f5;
+        color: #333;
+    }
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background-color: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    h1, h2, h3 {
+        color: #2c3e50;
+    }
+    .section {
+        margin-bottom: 30px;
+        padding: 15px;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+        border: 1px solid #eaeaea;
+    }
+    .form-group {
+        margin-bottom: 15px;
+    }
+    label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
+    input[type="text"], select {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-sizing: border-box;
+        font-family: monospace;
+    }
+    .button-group {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+    button {
+        background-color: #3498db;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        flex: 1;
+    }
+    button.encrypt-btn {
+        background-color: #27ae60;
+    }
+    button.decrypt-btn {
+        background-color: #e74c3c;
+    }
+    button.reset-btn {
+        background-color: #7f8c8d;
+    }
+    button:hover {
+        opacity: 0.9;
+    }
+    .step-container {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        margin-top: 10px;
+    }
+    .step-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .step-label {
+        min-width: 140px;
+        font-weight: bold;
+    }
+    .step-input {
+        flex: 1;
+    }
+    .round-container {
+        border: 1px solid #ddd;
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 5px;
+        background-color: white;
+    }
+    .round-title {
+        margin-top: 0;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 10px;
+        color: #3498db;
+    }
+    .left-side {
+        color: #e74c3c;
+        background-color: #fef5f5;
+    }
+    .right-side {
+        color: #27ae60;
+        background-color: #f2faf5;
+    }
+    .highlighted {
+        box-shadow: 0 0 5px 2px #f39c12;
+    }
+    .toggle-section {
+        cursor: pointer;
+        user-select: none;
+    }
+    .toggle-section::after {
+        content: " ▼";
+        font-size: 12px;
+    }
+    .toggle-section.collapsed::after {
+        content: " ▶";
+    }
+    .collapsible {
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+        max-height: 1000px;
+    }
+    .collapsible.collapsed {
+        max-height: 0;
+    }
+    .format-toggle {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+    .format-btn {
+        background-color: #eee;
+        color: #333;
+        border: 1px solid #ddd;
+        padding: 5px 10px;
+        border-radius: 3px;
+        cursor: pointer;
+    }
+    .format-btn.active {
+        background-color: #3498db;
+        color: white;
+        border-color: #2980b9;
+    }
+    .explanation {
+        background-color: #f1f9ff;
+        padding: 10px;
+        border-radius: 5px;
+        margin-bottom: 15px;
+        border-left: 3px solid #3498db;
+    }
+    .round-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+    }
+    @media (max-width: 768px) {
+        .round-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+    @media (max-width: 480px) {
+        .round-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    .round-box {
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        padding: 10px;
+        background-color: #f9f9f9;
+    }
+    .round-box h3 {
+        margin-top: 0;
+        color: #3498db;
+        font-size: 16px;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 5px;
+        margin-bottom: 10px;
+    }
+    .input-group {
+        margin-bottom: 10px;
+    }
+</style>
+<body>
+<nav style="margin: 0 0 20px; font: 14px system-ui"><a href="../index.html">← All CryptoApps</a> · Educational use only</nav>
+    <div class="container">
+        <h1>Data Encryption Standard (DES) Tool</h1>
+        
+        <div class="explanation">
+            <p>This tool implements the full DES algorithm with all 16 rounds, showing every step of the encryption and decryption process.</p>
+        </div>
+
+        <div class="section">
+            <h2>Input Parameters</h2>
+            <div class="form-group">
+                <label for="input-text">Plaintext/Ciphertext (64 bits):</label>
+                <input type="text" id="input-text" placeholder="Enter 64 bits, decimal, or hex value">
+            </div>
+            
+            <div class="form-group">
+                <label for="input-key">Key (64 bits with parity):</label>
+                <input type="text" id="input-key" placeholder="Enter 64 bits, decimal, or hex value">
+            </div>
+            
+            <div class="button-group">
+                <button id="encrypt-btn" class="encrypt-btn">Encrypt</button>
+                <button id="decrypt-btn" class="decrypt-btn">Decrypt</button>
+                <button id="reset-btn" class="reset-btn">Reset All</button>
+            </div>
+            
+            <div class="form-group">
+                <label>Output Format:</label>
+                <select id="output-format">
+                    <option value="binary">Binary</option>
+                    <option value="decimal">Decimal</option>
+                    <option value="hex">Hexadecimal</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>Key Generation:</h2>
+            <div id="key-generation">
+                <div class="step-container">
+                    <div class="step-row">
+                        <span class="step-label">Initial Key:</span>
+                        <input type="text" id="key-initial" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">After PC-1:</span>
+                        <input type="text" id="key-pc1" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Split C0:</span>
+                        <input type="text" id="key-c0" class="step-input left-side" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Split D0:</span>
+                        <input type="text" id="key-d0" class="step-input right-side" readonly>
+                    </div>
+                </div>
+                
+                <div class="round-grid">
+                    <!-- Key schedule for all 16 rounds -->
+                    <div class="round-box">
+                        <h3>Round 1 Key</h3>
+                        <div class="input-group">
+                            <label>C1:</label>
+                            <input type="text" id="key-c1" class="left-side" readonly>
+                        </div>
+                        <div class="input-group">
+                            <label>D1:</label>
+                            <input type="text" id="key-d1" class="right-side" readonly>
+                        </div>
+                        <div class="input-group">
+                            <label>Key K1:</label>
+                            <input type="text" id="key-k1" readonly>
+                        </div>
+                    </div>
+                    
+                    <div class="round-box">
+                        <h3>Round 2 Key</h3>
+                        <div class="input-group">
+                            <label>C2:</label>
+                            <input type="text" id="key-c2" class="left-side" readonly>
+                        </div>
+                        <div class="input-group">
+                            <label>D2:</label>
+                            <input type="text" id="key-d2" class="right-side" readonly>
+                        </div>
+                        <div class="input-group">
+                            <label>Key K2:</label>
+                            <input type="text" id="key-k2" readonly>
+                        </div>
+                    </div>
+                    
+                    <div class="round-box">
+                        <h3>Round 3 Key</h3>
+                        <div class="input-group">
+                            <label>C3:</label>
+                            <input type="text" id="key-c3" class="left-side" readonly>
+                        </div>
+                        <div class="input-group">
+                            <label>D3:</label>
+                            <input type="text" id="key-d3" class="right-side" readonly>
+                        </div>
+                        <div class="input-group">
+                            <label>Key K3:</label>
+                            <input type="text" id="key-k3" readonly>
+                        </div>
+                    </div>
+                    
+                    <div class="round-box">
+                        <h3>Round 4 Key</h3>
+                        <div class="input-group">
+                            <label>C4:</label>
+                            <input type="text" id="key-c4" class="left-side" readonly>
+                        </div>
+                        <div class="input-group">
+                            <label>D4:</label>
+                            <input type="text" id="key-d4" class="right-side" readonly>
+                        </div>
+                        <div class="input-group">
+                            <label>Key K4:</label>
+                            <input type="text" id="key-k4" readonly>
+                        </div>
+                    </div>
+                    
+                    <div class="round-box">
+                        <h3>Round 5 Key</h3>
+                        <div class="input-group">
+                            <label>C5:</label>
+                            <input type="text" id="key-c5" class="left-side" readonly>
+                        </div>
+                        <div class="input-group">
+                            <label>D5:</label>
+                            <input type="text" id="key-d5" class="right-side" readonly>
+                        </div>
+                        <div class="input-group">
+                            <label>Key K5:</label>
+                            <input type="text" id="key-k5" readonly>
+                        </div>
+                    </div>
+                    
+                    <div class="round-box">
+                        <h3>Round 6 Key</h3>
+                        <div class="input-group">
+                            <label>C6:</label>
+                            <input type="text" id="key-c6" class="left-side" readonly>
+                        </div>
+                        <div class="input-group">
+                            <label>D6:</label>
+                            <input type="text" id="key-d6" class="right-side" readonly>
+                        </div>
+                        <div class="input-group">
+                            <label>Key K6:</label>
+                            <input type="text" id="key-k6" readonly>
+                        </div>
+                    </div>
+                    
+                    <div class="round-box">
+                        <h3>Round 7 Key</h3>
+                        <div class="input-group">
+                            <label>C7:</label>
+                            <input type="text" id="key-c7" class="left-side" readonly>
+                        </div>
+                        <div class="input-group">
+                            <label>D7:</label>
+                            <input type="text" id="key-d7" class="right-side" readonly>
+                        </div>
+                        <div class="input-group">
+                            <label>Key K7:</label>
+                            <input type="text" id="key-k7" readonly>
+                        </div>
+                    </div>
+                    
+                    <div class="round-box">
+                        <h3>Round 8 Key</h3>
+                        <div class="input-group">
+                            <label>C8:</label>
+                            <input type="text" id="key-c8" class="left-side" readonly>
+                        </div>
+                        <div class="input-group">
+                            <label>D8:</label>
+                            <input type="text" id="key-d8" class="right-side" readonly>
+                        </div>
+                        <div class="input-group">
+                            <label>Key K8:</label>
+                            <input type="text" id="key-k8" readonly>
+                        </div>
+                    </div>
+                    
+                    <div class="round-box">
+                        <h3>Round 9 Key</h3>
+                        <div class="input-group">
+                            <label>C9:</label>
+                            <input type="text" id="key-c9" class="left-side" readonly>
+                        </div>
+                        <div class="input-group">
+                            <label>D9:</label>
+                            <input type="text" id="key-d9" class="right-side" readonly>
+                        </div>
+                        <div class="input-group">
+                            <label>Key K9:</label>
+                            <input type="text" id="key-k9" readonly>
+                        </div>
+                    </div>
+                    
+                    <div class="round-box">
+                        <h3>Round 10 Key</h3>
+                        <div class="input-group">
+                            <label>C10:</label>
+                            <input type="text" id="key-c10" class="left-side" readonly>
+                        </div>
+                        <div class="input-group">
+                            <label>D10:</label>
+                            <input type="text" id="key-d10" class="right-side" readonly>
+                        </div>
+                        <div class="input-group">
+                            <label>Key K10:</label>
+                            <input type="text" id="key-k10" readonly>
+                        </div>
+                    </div>
+                    
+                    <div class="round-box">
+                        <h3>Round 11 Key</h3>
+                        <div class="input-group">
+                            <label>C11:</label>
+                            <input type="text" id="key-c11" class="left-side" readonly>
+                        </div>
+                        <div class="input-group">
+                            <label>D11:</label>
+                            <input type="text" id="key-d11" class="right-side" readonly>
+                        </div>
+                        <div class="input-group">
+                            <label>Key K11:</label>
+                            <input type="text" id="key-k11" readonly>
+                        </div>
+                    </div>
+                    
+                    <div class="round-box">
+                        <h3>Round 12 Key</h3>
+                        <div class="input-group">
+                            <label>C12:</label>
+                            <input type="text" id="key-c12" class="left-side" readonly>
+                        </div>
+                        <div class="input-group">
+                            <label>D12:</label>
+                            <input type="text" id="key-d12" class="right-side" readonly>
+                        </div>
+                        <div class="input-group">
+                            <label>Key K12:</label>
+                            <input type="text" id="key-k12" readonly>
+                        </div>
+                    </div>
+                    
+                    <div class="round-box">
+                        <h3>Round 13 Key</h3>
+                        <div class="input-group">
+                            <label>C13:</label>
+                            <input type="text" id="key-c13" class="left-side" readonly>
+                        </div>
+                        <div class="input-group">
+                            <label>D13:</label>
+                            <input type="text" id="key-d13" class="right-side" readonly>
+                        </div>
+                        <div class="input-group">
+                            <label>Key K13:</label>
+                            <input type="text" id="key-k13" readonly>
+                        </div>
+                    </div>
+                    
+                    <div class="round-box">
+                        <h3>Round 14 Key</h3>
+                        <div class="input-group">
+                            <label>C14:</label>
+                            <input type="text" id="key-c14" class="left-side" readonly>
+                        </div>
+                        <div class="input-group">
+                            <label>D14:</label>
+                            <input type="text" id="key-d14" class="right-side" readonly>
+                        </div>
+                        <div class="input-group">
+                            <label>Key K14:</label>
+                            <input type="text" id="key-k14" readonly>
+                        </div>
+                    </div>
+                    
+                    <div class="round-box">
+                        <h3>Round 15 Key</h3>
+                        <div class="input-group">
+                            <label>C15:</label>
+                            <input type="text" id="key-c15" class="left-side" readonly>
+                        </div>
+                        <div class="input-group">
+                            <label>D15:</label>
+                            <input type="text" id="key-d15" class="right-side" readonly>
+                        </div>
+                        <div class="input-group">
+                            <label>Key K15:</label>
+                            <input type="text" id="key-k15" readonly>
+                        </div>
+                    </div>
+                    
+                    <div class="round-box">
+                        <h3>Round 16 Key</h3>
+                        <div class="input-group">
+                            <label>C16:</label>
+                            <input type="text" id="key-c16" class="left-side" readonly>
+                        </div>
+                        <div class="input-group">
+                            <label>D16:</label>
+                            <input type="text" id="key-d16" class="right-side" readonly>
+                        </div>
+                        <div class="input-group">
+                            <label>Key K16:</label>
+                            <input type="text" id="key-k16" readonly>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>Initial Round Step:</h2>
+            <div id="initial-processing">
+                <div class="step-container">
+                    <div class="step-row">
+                        <span class="step-label">Input:</span>
+                        <input type="text" id="initial-input" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">After IP:</span>
+                        <input type="text" id="after-ip" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Split L0:</span>
+                        <input type="text" id="ip-left" class="step-input left-side" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Split R0:</span>
+                        <input type="text" id="ip-right" class="step-input right-side" readonly>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- DES Rounds Section - All 16 Rounds -->
+        <div class="section">
+            <h2>DES Rounds</h2>
+            
+            <!-- Round 1 -->
+            <div class="round-container">
+                <h3 class="round-title">Round 1</h3>
+                <div class="step-container">
+                    <div class="step-row">
+                        <span class="step-label">Input L0:</span>
+                        <input type="text" id="round1-input-left" class="step-input left-side" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Input R0:</span>
+                        <input type="text" id="round1-input-right" class="step-input right-side" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Expansion E(R0):</span>
+                        <input type="text" id="round1-expansion" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Key K1:</span>
+                        <input type="text" id="round1-key" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">E(R0) ⊕ K1:</span>
+                        <input type="text" id="round1-xor" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">S-Box Output:</span>
+                        <input type="text" id="round1-sbox" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">After P:</span>
+                        <input type="text" id="round1-p" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">L0 ⊕ P:</span>
+                        <input type="text" id="round1-output-right" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Output L1:</span>
+                        <input type="text" id="round1-l1" class="step-input left-side" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Output R1:</span>
+                        <input type="text" id="round1-r1" class="step-input right-side" readonly>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Round 2 -->
+            <div class="round-container">
+                <h3 class="round-title">Round 2</h3>
+                <div class="step-container">
+                    <div class="step-row">
+                        <span class="step-label">Input L1:</span>
+                        <input type="text" id="round2-input-left" class="step-input left-side" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Input R1:</span>
+                        <input type="text" id="round2-input-right" class="step-input right-side" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Expansion E(R1):</span>
+                        <input type="text" id="round2-expansion" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Key K2:</span>
+                        <input type="text" id="round2-key" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">E(R1) ⊕ K2:</span>
+                        <input type="text" id="round2-xor" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">S-Box Output:</span>
+                        <input type="text" id="round2-sbox" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">After P:</span>
+                        <input type="text" id="round2-p" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">L1 ⊕ P:</span>
+                        <input type="text" id="round2-output-right" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Output L2:</span>
+                        <input type="text" id="round2-l2" class="step-input left-side" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Output R2:</span>
+                        <input type="text" id="round2-r2" class="step-input right-side" readonly>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Continue with Rounds 3-14 with the same structure -->
+            <!-- Rounds 3-14 would follow the same pattern -->
+            <!-- Round 3 -->
+           
+            <div class="round-container">
+                <h3 class="round-title">Round 3</h3>
+                <div class="step-container">
+                    <div class="step-row">
+                        <span class="step-label">Input L2:</span>
+                        <input type="text" id="round3-input-left" class="step-input left-side" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Input R2:</span>
+                        <input type="text" id="round3-input-right" class="step-input right-side" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Expansion E(R2):</span>
+                        <input type="text" id="round3-expansion" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Key K3:</span>
+                        <input type="text" id="round3-key" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">E(R2) ⊕ K3:</span>
+                        <input type="text" id="round3-xor" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">S-Box Output:</span>
+                        <input type="text" id="round3-sbox" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">After P:</span>
+                        <input type="text" id="round3-p" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">L2 ⊕ P:</span>
+                        <input type="text" id="round3-output-right" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Output L3:</span>
+                        <input type="text" id="round3-l3" class="step-input left-side" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Output R3:</span>
+                        <input type="text" id="round3-r3" class="step-input right-side" readonly>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Round 4 -->
+            <div class="round-container">
+                <h3 class="round-title">Round 4</h3>
+                <div class="step-container">
+                    <div class="step-row">
+                        <span class="step-label">Input L3:</span>
+                        <input type="text" id="round4-input-left" class="step-input left-side" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Input R3:</span>
+                        <input type="text" id="round4-input-right" class="step-input right-side" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Expansion E(R3):</span>
+                        <input type="text" id="round4-expansion" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Key K4:</span>
+                        <input type="text" id="round4-key" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">E(R3) ⊕ K4:</span>
+                        <input type="text" id="round4-xor" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">S-Box Output:</span>
+                        <input type="text" id="round4-sbox" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">After P:</span>
+                        <input type="text" id="round4-p" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">L3 ⊕ P:</span>
+                        <input type="text" id="round4-output-right" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Output L4:</span>
+                        <input type="text" id="round4-l4" class="step-input left-side" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Output R4:</span>
+                        <input type="text" id="round4-r4" class="step-input right-side" readonly>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Round 5 -->
+            <div class="round-container">
+                <h3 class="round-title">Round 5</h3>
+                <div class="step-container">
+                    <div class="step-row">
+                        <span class="step-label">Input L4:</span>
+                        <input type="text" id="round5-input-left" class="step-input left-side" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Input R4:</span>
+                        <input type="text" id="round5-input-right" class="step-input right-side" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Expansion E(R4):</span>
+                        <input type="text" id="round5-expansion" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Key K5:</span>
+                        <input type="text" id="round5-key" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">E(R4) ⊕ K5:</span>
+                        <input type="text" id="round5-xor" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">S-Box Output:</span>
+                        <input type="text" id="round5-sbox" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">After P:</span>
+                        <input type="text" id="round5-p" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">L4 ⊕ P:</span>
+                        <input type="text" id="round5-output-right" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Output L5:</span>
+                        <input type="text" id="round5-l5" class="step-input left-side" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Output R5:</span>
+                        <input type="text" id="round5-r5" class="step-input right-side" readonly>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Round 6 -->
+            <div class="round-container">
+                <h3 class="round-title">Round 6</h3>
+                <div class="step-container">
+                    <div class="step-row">
+                        <span class="step-label">Input L5:</span>
+                        <input type="text" id="round6-input-left" class="step-input left-side" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Input R5:</span>
+                        <input type="text" id="round6-input-right" class="step-input right-side" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Expansion E(R5):</span>
+                        <input type="text" id="round6-expansion" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Key K6:</span>
+                        <input type="text" id="round6-key" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">E(R5) ⊕ K6:</span>
+                        <input type="text" id="round6-xor" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">S-Box Output:</span>
+                        <input type="text" id="round6-sbox" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">After P:</span>
+                        <input type="text" id="round6-p" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">L5 ⊕ P:</span>
+                        <input type="text" id="round6-output-right" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Output L6:</span>
+                        <input type="text" id="round6-l6" class="step-input left-side" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Output R6:</span>
+                        <input type="text" id="round6-r6" class="step-input right-side" readonly>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Round 7 -->
+            <div class="round-container">
+                <h3 class="round-title">Round 7</h3>
+                <div class="step-container">
+                    <div class="step-row">
+                        <span class="step-label">Input L6:</span>
+                        <input type="text" id="round7-input-left" class="step-input left-side" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Input R6:</span>
+                        <input type="text" id="round7-input-right" class="step-input right-side" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Expansion E(R6):</span>
+                        <input type="text" id="round7-expansion" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Key K7:</span>
+                        <input type="text" id="round7-key" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">E(R6) ⊕ K7:</span>
+                        <input type="text" id="round7-xor" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">S-Box Output:</span>
+                        <input type="text" id="round7-sbox" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">After P:</span>
+                        <input type="text" id="round7-p" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">L6 ⊕ P:</span>
+                        <input type="text" id="round7-output-right" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Output L7:</span>
+                        <input type="text" id="round7-l7" class="step-input left-side" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Output R7:</span>
+                        <input type="text" id="round7-r7" class="step-input right-side" readonly>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Round 8 -->
+            <div class="round-container">
+                <h3 class="round-title">Round 8</h3>
+                <div class="step-container">
+                    <div class="step-row">
+                        <span class="step-label">Input L7:</span>
+                        <input type="text" id="round8-input-left" class="step-input left-side" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Input R7:</span>
+                        <input type="text" id="round8-input-right" class="step-input right-side" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Expansion E(R7):</span>
+                        <input type="text" id="round8-expansion" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Key K8:</span>
+                        <input type="text" id="round8-key" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">E(R7) ⊕ K8:</span>
+                        <input type="text" id="round8-xor" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">S-Box Output:</span>
+                        <input type="text" id="round8-sbox" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">After P:</span>
+                        <input type="text" id="round8-p" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">L7 ⊕ P:</span>
+                        <input type="text" id="round8-output-right" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Output L8:</span>
+                        <input type="text" id="round8-l8" class="step-input left-side" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Output R8:</span>
+                        <input type="text" id="round8-r8" class="step-input right-side" readonly>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Round 9 -->
+            <div class="round-container">
+                <h3 class="round-title">Round 9</h3>
+                <div class="step-container">
+                    <div class="step-row">
+                        <span class="step-label">Input L8:</span>
+                        <input type="text" id="round9-input-left" class="step-input left-side" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Input R8:</span>
+                        <input type="text" id="round9-input-right" class="step-input right-side" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Expansion E(R8):</span>
+                        <input type="text" id="round9-expansion" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Key K9:</span>
+                        <input type="text" id="round9-key" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">E(R8) ⊕ K9:</span>
+                        <input type="text" id="round9-xor" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">S-Box Output:</span>
+                        <input type="text" id="round9-sbox" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">After P:</span>
+                        <input type="text" id="round9-p" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">L8 ⊕ P:</span>
+                        <input type="text" id="round9-output-right" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Output L9:</span>
+                        <input type="text" id="round9-l9" class="step-input left-side" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Output R9:</span>
+                        <input type="text" id="round9-r9" class="step-input right-side" readonly>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Round 10 -->
+            <div class="round-container">
+                <h3 class="round-title">Round 10</h3>
+                <div class="step-container">
+                    <div class="step-row">
+                        <span class="step-label">Input L9:</span>
+                        <input type="text" id="round10-input-left" class="step-input left-side" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Input R9:</span>
+                        <input type="text" id="round10-input-right" class="step-input right-side" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Expansion E(R9):</span>
+                        <input type="text" id="round10-expansion" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Key K10:</span>
+                        <input type="text" id="round10-key" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">E(R9) ⊕ K10:</span>
+                        <input type="text" id="round10-xor" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">S-Box Output:</span>
+                        <input type="text" id="round10-sbox" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">After P:</span>
+                        <input type="text" id="round10-p" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">L9 ⊕ P:</span>
+                        <input type="text" id="round10-output-right" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Output L10:</span>
+                        <input type="text" id="round10-l10" class="step-input left-side" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Output R10:</span>
+                        <input type="text" id="round10-r10" class="step-input right-side" readonly>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Round 11 -->
+            <div class="round-container">
+                <h3 class="round-title">Round 11</h3>
+                <div class="step-container">
+                    <div class="step-row">
+                        <span class="step-label">Input L10:</span>
+                        <input type="text" id="round11-input-left" class="step-input left-side" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Input R10:</span>
+                        <input type="text" id="round11-input-right" class="step-input right-side" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Expansion E(R10):</span>
+                        <input type="text" id="round11-expansion" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Key K11:</span>
+                        <input type="text" id="round11-key" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">E(R10) ⊕ K11:</span>
+                        <input type="text" id="round11-xor" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">S-Box Output:</span>
+                        <input type="text" id="round11-sbox" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">After P:</span>
+                        <input type="text" id="round11-p" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">L10 ⊕ P:</span>
+                        <input type="text" id="round11-output-right" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Output L11:</span>
+                        <input type="text" id="round11-l11" class="step-input left-side" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Output R11:</span>
+                        <input type="text" id="round11-r11" class="step-input right-side" readonly>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Round 12 -->
+            <div class="round-container">
+                <h3 class="round-title">Round 12</h3>
+                <div class="step-container">
+                    <div class="step-row">
+                        <span class="step-label">Input L11:</span>
+                        <input type="text" id="round12-input-left" class="step-input left-side" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Input R11:</span>
+                        <input type="text" id="round12-input-right" class="step-input right-side" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Expansion E(R11):</span>
+                        <input type="text" id="round12-expansion" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Key K12:</span>
+                        <input type="text" id="round12-key" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">E(R11) ⊕ K12:</span>
+                        <input type="text" id="round12-xor" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">S-Box Output:</span>
+                        <input type="text" id="round12-sbox" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">After P:</span>
+                        <input type="text" id="round12-p" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">L11 ⊕ P:</span>
+                        <input type="text" id="round12-output-right" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Output L12:</span>
+                        <input type="text" id="round12-l12" class="step-input left-side" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Output R12:</span>
+                        <input type="text" id="round12-r12" class="step-input right-side" readonly>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Round 13 -->
+            <div class="round-container">
+                <h3 class="round-title">Round 13</h3>
+                <div class="step-container">
+                    <div class="step-row">
+                        <span class="step-label">Input L12:</span>
+                        <input type="text" id="round13-input-left" class="step-input left-side" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Input R12:</span>
+                        <input type="text" id="round13-input-right" class="step-input right-side" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Expansion E(R12):</span>
+                        <input type="text" id="round13-expansion" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Key K13:</span>
+                        <input type="text" id="round13-key" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">E(R12) ⊕ K13:</span>
+                        <input type="text" id="round13-xor" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">S-Box Output:</span>
+                        <input type="text" id="round13-sbox" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">After P:</span>
+                        <input type="text" id="round13-p" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">L12 ⊕ P:</span>
+                        <input type="text" id="round13-output-right" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Output L13:</span>
+                        <input type="text" id="round13-l13" class="step-input left-side" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Output R13:</span>
+                        <input type="text" id="round13-r13" class="step-input right-side" readonly>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Round 14 -->
+            <div class="round-container">
+                <h3 class="round-title">Round 14</h3>
+                <div class="step-container">
+                    <div class="step-row">
+                        <span class="step-label">Input L13:</span>
+                        <input type="text" id="round14-input-left" class="step-input left-side" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Input R13:</span>
+                        <input type="text" id="round14-input-right" class="step-input right-side" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Expansion E(R13):</span>
+                        <input type="text" id="round14-expansion" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Key K14:</span>
+                        <input type="text" id="round14-key" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">E(R13) ⊕ K14:</span>
+                        <input type="text" id="round14-xor" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">S-Box Output:</span>
+                        <input type="text" id="round14-sbox" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">After P:</span>
+                        <input type="text" id="round14-p" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">L13 ⊕ P:</span>
+                        <input type="text" id="round14-output-right" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Output L14:</span>
+                        <input type="text" id="round14-l14" class="step-input left-side" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Output R14:</span>
+                        <input type="text" id="round14-r14" class="step-input right-side" readonly>
+                    </div>
+                </div>
+            </div>
+            <!-- Round 15 -->
+            <div class="round-container">
+                <h3 class="round-title">Round 15</h3>
+                <div class="step-container">
+                    <div class="step-row">
+                        <span class="step-label">Input L14:</span>
+                        <input type="text" id="round15-input-left" class="step-input left-side" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Input R14:</span>
+                        <input type="text" id="round15-input-right" class="step-input right-side" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Expansion E(R14):</span>
+                        <input type="text" id="round15-expansion" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Key K15:</span>
+                        <input type="text" id="round15-key" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">E(R14) ⊕ K15:</span>
+                        <input type="text" id="round15-xor" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">S-Box Output:</span>
+                        <input type="text" id="round15-sbox" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">After P:</span>
+                        <input type="text" id="round15-p" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">L14 ⊕ P:</span>
+                        <input type="text" id="round15-output-right" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Output L15:</span>
+                        <input type="text" id="round15-l15" class="step-input left-side" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Output R15:</span>
+                        <input type="text" id="round15-r15" class="step-input right-side" readonly>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Round 16 -->
+            <div class="round-container">
+                <h3 class="round-title">Round 16</h3>
+                <div class="step-container">
+                    <div class="step-row">
+                        <span class="step-label">Input L15:</span>
+                        <input type="text" id="round16-input-left" class="step-input left-side" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Input R15:</span>
+                        <input type="text" id="round16-input-right" class="step-input right-side" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Expansion E(R15):</span>
+                        <input type="text" id="round16-expansion" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Key K16:</span>
+                        <input type="text" id="round16-key" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">E(R15) ⊕ K16:</span>
+                        <input type="text" id="round16-xor" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">S-Box Output:</span>
+                        <input type="text" id="round16-sbox" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">After P:</span>
+                        <input type="text" id="round16-p" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">L15 ⊕ P:</span>
+                        <input type="text" id="round16-output-right" class="step-input" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Output L16:</span>
+                        <input type="text" id="round16-l16" class="step-input left-side" readonly>
+                    </div>
+                    <div class="step-row">
+                        <span class="step-label">Output R16:</span>
+                        <input type="text" id="round16-r16" class="step-input right-side" readonly>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>Final Result</h2>
+                <div id="final-result">
+                    <div class="step-container">
+                        <div class="step-row">
+                            <span class="step-label">Swap L16,R16:</span>
+                            <input type="text" id="final-combined" class="step-input" readonly>
+                        </div>
+                        <div class="step-row">
+                            <span class="step-label">After IP⁻¹:</span>
+                            <input type="text" id="final-output" class="step-input" readonly>
+                        </div>
+                        <div class="step-row">
+                            <span id="result-label" class="step-label">Output:</span>
+                            <input type="text" id="result" class="step-input" readonly>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <script> 
+                // DES Constants and Tables
+                const IP = [
+                    58, 50, 42, 34, 26, 18, 10, 2,
+                    60, 52, 44, 36, 28, 20, 12, 4,
+                    62, 54, 46, 38, 30, 22, 14, 6,
+                    64, 56, 48, 40, 32, 24, 16, 8,
+                    57, 49, 41, 33, 25, 17, 9, 1,
+                    59, 51, 43, 35, 27, 19, 11, 3,
+                    61, 53, 45, 37, 29, 21, 13, 5,
+                    63, 55, 47, 39, 31, 23, 15, 7
+                ];
+                
+                const IP_INVERSE = [
+                    40, 8, 48, 16, 56, 24, 64, 32,
+                    39, 7, 47, 15, 55, 23, 63, 31,
+                    38, 6, 46, 14, 54, 22, 62, 30,
+                    37, 5, 45, 13, 53, 21, 61, 29,
+                    36, 4, 44, 12, 52, 20, 60, 28,
+                    35, 3, 43, 11, 51, 19, 59, 27,
+                    34, 2, 42, 10, 50, 18, 58, 26,
+                    33, 1, 41, 9, 49, 17, 57, 25
+                ];
+                
+                const PC1 = [
+                    57, 49, 41, 33, 25, 17, 9,
+                    1, 58, 50, 42, 34, 26, 18,
+                    10, 2, 59, 51, 43, 35, 27,
+                    19, 11, 3, 60, 52, 44, 36,
+                    63, 55, 47, 39, 31, 23, 15,
+                    7, 62, 54, 46, 38, 30, 22,
+                    14, 6, 61, 53, 45, 37, 29,
+                    21, 13, 5, 28, 20, 12, 4
+                ];
+                
+                const PC2 = [
+                    14, 17, 11, 24, 1, 5,
+                    3, 28, 15, 6, 21, 10,
+                    23, 19, 12, 4, 26, 8,
+                    16, 7, 27, 20, 13, 2,
+                    41, 52, 31, 37, 47, 55,
+                    30, 40, 51, 45, 33, 48,
+                    44, 49, 39, 56, 34, 53,
+                    46, 42, 50, 36, 29, 32
+                ];
+                
+                const EXPANSION = [
+                    32, 1, 2, 3, 4, 5,
+                    4, 5, 6, 7, 8, 9,
+                    8, 9, 10, 11, 12, 13,
+                    12, 13, 14, 15, 16, 17,
+                    16, 17, 18, 19, 20, 21,
+                    20, 21, 22, 23, 24, 25,
+                    24, 25, 26, 27, 28, 29,
+                    28, 29, 30, 31, 32, 1
+                ];
+                
+                const P = [
+                    16, 7, 20, 21, 29, 12, 28, 17,
+                    1, 15, 23, 26, 5, 18, 31, 10,
+                    2, 8, 24, 14, 32, 27, 3, 9,
+                    19, 13, 30, 6, 22, 11, 4, 25
+                ];
+                
+                const SHIFT_TABLE = [1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1];
+                
+                const S_BOXES = [
+                    // S1
+                    [
+                        [14, 4, 13, 1, 2, 15, 11, 8, 3, 10, 6, 12, 5, 9, 0, 7],
+                        [0, 15, 7, 4, 14, 2, 13, 1, 10, 6, 12, 11, 9, 5, 3, 8],
+                        [4, 1, 14, 8, 13, 6, 2, 11, 15, 12, 9, 7, 3, 10, 5, 0],
+                        [15, 12, 8, 2, 4, 9, 1, 7, 5, 11, 3, 14, 10, 0, 6, 13]
+                    ],
+                    // S2
+                    [
+                        [15, 1, 8, 14, 6, 11, 3, 4, 9, 7, 2, 13, 12, 0, 5, 10],
+                        [3, 13, 4, 7, 15, 2, 8, 14, 12, 0, 1, 10, 6, 9, 11, 5],
+                        [0, 14, 7, 11, 10, 4, 13, 1, 5, 8, 12, 6, 9, 3, 2, 15],
+                        [13, 8, 10, 1, 3, 15, 4, 2, 11, 6, 7, 12, 0, 5, 14, 9]
+                    ],
+                    // S3
+                    [
+                        [10, 0, 9, 14, 6, 3, 15, 5, 1, 13, 12, 7, 11, 4, 2, 8],
+                        [13, 7, 0, 9, 3, 4, 6, 10, 2, 8, 5, 14, 12, 11, 15, 1],
+                        [13, 6, 4, 9, 8, 15, 3, 0, 11, 1, 2, 12, 5, 10, 14, 7],
+                        [1, 10, 13, 0, 6, 9, 8, 7, 4, 15, 14, 3, 11, 5, 2, 12]
+                    ],
+                    // S4
+                    [
+                        [7, 13, 14, 3, 0, 6, 9, 10, 1, 2, 8, 5, 11, 12, 4, 15],
+                        [13, 8, 11, 5, 6, 15, 0, 3, 4, 7, 2, 12, 1, 10, 14, 9],
+                        [10, 6, 9, 0, 12, 11, 7, 13, 15, 1, 3, 14, 5, 2, 8, 4],
+                        [3, 15, 0, 6, 10, 1, 13, 8, 9, 4, 5, 11, 12, 7, 2, 14]
+                    ],
+                    // S5
+                    [
+                        [2, 12, 4, 1, 7, 10, 11, 6, 8, 5, 3, 15, 13, 0, 14, 9],
+                        [14, 11, 2, 12, 4, 7, 13, 1, 5, 0, 15, 10, 3, 9, 8, 6],
+                        [4, 2, 1, 11, 10, 13, 7, 8, 15, 9, 12, 5, 6, 3, 0, 14],
+                        [11, 8, 12, 7, 1, 14, 2, 13, 6, 15, 0, 9, 10, 4, 5, 3]
+                    ],
+                    // S6
+                    [
+                        [12, 1, 10, 15, 9, 2, 6, 8, 0, 13, 3, 4, 14, 7, 5, 11],
+                        [10, 15, 4, 2, 7, 12, 9, 5, 6, 1, 13, 14, 0, 11, 3, 8],
+                        [9, 14, 15, 5, 2, 8, 12, 3, 7, 0, 4, 10, 1, 13, 11, 6],
+                        [4, 3, 2, 12, 9, 5, 15, 10, 11, 14, 1, 7, 6, 0, 8, 13]
+                    ],
+                    // S7
+                    [
+                        [4, 11, 2, 14, 15, 0, 8, 13, 3, 12, 9, 7, 5, 10, 6, 1],
+                        [13, 0, 11, 7, 4, 9, 1, 10, 14, 3, 5, 12, 2, 15, 8, 6],
+                        [1, 4, 11, 13, 12, 3, 7, 14, 10, 15, 6, 8, 0, 5, 9, 2],
+                        [6, 11, 13, 8, 1, 4, 10, 7, 9, 5, 0, 15, 14, 2, 3, 12]
+                    ],
+                    // S8
+                    [
+                        [13, 2, 8, 4, 6, 15, 11, 1, 10, 9, 3, 14, 5, 0, 12, 7],
+                        [1, 15, 13, 8, 10, 3, 7, 4, 12, 5, 6, 11, 0, 14, 9, 2],
+                        [7, 11, 4, 1, 9, 12, 14, 2, 0, 6, 10, 13, 15, 3, 5, 8],
+                        [2, 1, 14, 7, 4, 10, 8, 13, 15, 12, 9, 0, 3, 5, 6, 11]
+                    ]
+                ];
+                
+                // Current state for tracking and displaying values
+                let currentState = {};
+                
+                // Utility functions
+                function permute(input, table) {
+                    let result = '';
+                    for (let i = 0; i < table.length; i++) {
+                        result += input.charAt(table[i] - 1);
+                    }
+                    return result;
+                }
+                
+                function leftShift(bits, positions) {
+                    return bits.substring(positions) + bits.substring(0, positions);
+                }
+                
+                function xor(a, b) {
+                    let result = '';
+                    for (let i = 0; i < a.length; i++) {
+                        result += (a[i] === b[i]) ? '0' : '1';
+                    }
+                    return result;
+                }
+                
+                function applyS(input) {
+                    let output = '';
+                    for (let i = 0; i < 8; i++) {
+                        const chunk = input.substring(i * 6, (i + 1) * 6);
+                        const row = parseInt(chunk.charAt(0) + chunk.charAt(5), 2);
+                        const col = parseInt(chunk.substring(1, 5), 2);
+                        const val = S_BOXES[i][row][col];
+                        output += val.toString(2).padStart(4, '0');
+                    }
+                    return output;
+                }
+                
+                // Format detection and conversion
+                function detectInputFormat(input) {
+                    if (/^0b[01]+$/i.test(input) || /^[01]+$/.test(input)) {
+                        return 'binary';
+                    } else if (/^[0-9]+$/.test(input)) {
+                        return 'decimal';
+                    } else if (/^(?:0x)?[0-9A-Fa-f]+$/i.test(input)) {
+                        return 'hex';
+                    }
+                    return 'unknown';
+                }
+                
+                function convertToBinary(input, requiredLength) {
+                    input = input.trim();
+                    const format = detectInputFormat(input);
+                    let binary = '';
+                    
+                    try {
+                        switch (format) {
+                            case 'binary':
+                                binary = input.replace(/^0b/i, '');
+                                break;
+                            case 'decimal':
+                                binary = BigInt(input).toString(2);
+                                break;
+                            case 'hex':
+                                binary = BigInt('0x' + input.replace(/^0x/i, '')).toString(2);
+                                break;
+                            default:
+                                throw new Error('Unknown input format');
+                        }
+                        
+                        // Pad to required length or truncate if too long
+                        if (binary.length < requiredLength) {
+                            binary = binary.padStart(requiredLength, '0');
+                        } else if (binary.length > requiredLength) {
+                            binary = binary.slice(-requiredLength);
+                        }
+                        
+                        return binary;
+                    } catch (error) {
+                        console.error('Conversion error:', error);
+                        return ''.padStart(requiredLength, '0');
+                    }
+                }
+                
+                function formatOutput(binary, format) {
+                    if (!binary) return '';
+                    
+                    try {
+                        switch (format) {
+                            case 'binary':
+                                return binary;
+                            case 'decimal':
+                                return BigInt('0b' + binary).toString(10);
+                            case 'hex':
+                                return BigInt('0b' + binary).toString(16).toUpperCase().padStart(Math.ceil(binary.length / 4), '0');
+                            default:
+                                return binary;
+                        }
+                    } catch (error) {
+                        console.error('Output formatting error:', error);
+                        return binary;
+                    }
+                }
+                
+                // Update UI with current state
+                function updateState(id, value) {
+                    currentState[id] = value;
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.value = value;
+                    }
+                }
+                
+                // Key generation
+                function generateKeys(key) {
+                    const keyPC1 = permute(key, PC1);
+                    updateState('key-pc1', keyPC1);
+                    
+                    let c = keyPC1.substring(0, 28);
+                    let d = keyPC1.substring(28);
+                    updateState('key-c0', c);
+                    updateState('key-d0', d);
+                    
+                    const subKeys = [];
+                    
+                    for (let i = 0; i < 16; i++) {
+                        // Apply left shifts according to shift table
+                        c = leftShift(c, SHIFT_TABLE[i]);
+                        d = leftShift(d, SHIFT_TABLE[i]);
+                        
+                        // Update state for each round
+                        updateState(`key-c${i+1}`, c);
+                        updateState(`key-d${i+1}`, d);
+                        
+                        // Create subkey through PC2
+                        const combined = c + d;
+                        const subKey = permute(combined, PC2);
+                        subKeys.push(subKey);
+                        updateState(`key-k${i+1}`, subKey);
+                    }
+                    
+                    return subKeys;
+                }
+                
+                // Single round of DES
+                function desRound(left, right, subKey, roundNumber) {
+                    // Update input state
+                    updateState(`round${roundNumber}-input-left`, left);
+                    updateState(`round${roundNumber}-input-right`, right);
+                    
+                    // Expansion
+                    const expanded = permute(right, EXPANSION);
+                    updateState(`round${roundNumber}-expansion`, expanded);
+                    
+                    // XOR with round key
+                    updateState(`round${roundNumber}-key`, subKey);
+                    const xored = xor(expanded, subKey);
+                    updateState(`round${roundNumber}-xor`, xored);
+                    
+                    // S-Box substitution
+                    const sBoxOutput = applyS(xored);
+                    updateState(`round${roundNumber}-sbox`, sBoxOutput);
+                    
+                    // Permutation
+                    const pBoxOutput = permute(sBoxOutput, P);
+                    updateState(`round${roundNumber}-p`, pBoxOutput);
+                    
+                    // XOR with left half
+                    const newRight = xor(left, pBoxOutput);
+                    updateState(`round${roundNumber}-output-right`, newRight);
+                    
+                    // Update output state (swap for next round)
+                    updateState(`round${roundNumber}-l${roundNumber}`, right);
+                    updateState(`round${roundNumber}-r${roundNumber}`, newRight);
+                    
+                    return [right, newRight];
+                }
+                
+                // Encrypt process
+                function encrypt(plaintext, key) {
+                    // Generate all subkeys
+                    const subKeys = generateKeys(key);
+                    
+                    // Initial permutation
+                    const afterIP = permute(plaintext, IP);
+                    updateState('after-ip', afterIP);
+                    
+                    // Split into left and right halves
+                    let left = afterIP.substring(0, 32);
+                    let right = afterIP.substring(32);
+                    updateState('ip-left', left);
+                    updateState('ip-right', right);
+                    
+                    // 16 rounds of encryption
+                    for (let i = 0; i < 16; i++) {
+                        [left, right] = desRound(left, right, subKeys[i], i+1);
+                    }
+                    
+                    // Final swap and inverse permutation
+                    const combined = right + left; // Note the swap for the final output
+                    updateState('final-combined', combined);
+                    
+                    const ciphertext = permute(combined, IP_INVERSE);
+                    updateState('final-output', ciphertext);
+                    
+                    return ciphertext;
+                }
+                
+                // Decrypt process
+                function decrypt(ciphertext, key) {
+                    // Generate all subkeys
+                    const subKeys = generateKeys(key);
+                    
+                    // Initial permutation
+                    const afterIP = permute(ciphertext, IP);
+                    updateState('after-ip', afterIP);
+                    
+                    // Split into left and right halves
+                    let left = afterIP.substring(0, 32);
+                    let right = afterIP.substring(32);
+                    updateState('ip-left', left);
+                    updateState('ip-right', right);
+                    
+                    // 16 rounds of decryption (subkeys in reverse order)
+                    for (let i = 0; i < 16; i++) {
+                        [left, right] = desRound(left, right, subKeys[15 - i], i+1);
+                    }
+                    
+                    // Final swap and inverse permutation
+                    const combined = right + left; // Note the swap for the final output
+                    updateState('final-combined', combined);
+                    
+                    const plaintext = permute(combined, IP_INVERSE);
+                    updateState('final-output', plaintext);
+                    
+                    return plaintext;
+                }
+                
+                // Output format updating
+                function updateOutputFormat() {
+                    const format = document.getElementById('output-format').value;
+                    const binaryOutput = currentState['final-output'] || '';
+                    
+                    if (binaryOutput) {
+                        const formattedOutput = formatOutput(binaryOutput, format);
+                        updateState('result', formattedOutput);
+                    }
+                }
+                
+                // Reset all fields
+                function resetAll() {
+                    // Clear all input fields
+                    document.getElementById('input-text').value = '';
+                    document.getElementById('input-key').value = '';
+                    
+                    // Reset output format
+                    document.getElementById('output-format').value = 'binary';
+                    
+                    // Clear all calculated fields
+                    const fields = document.querySelectorAll('input[type="text"]:not(#input-text):not(#input-key)');
+                    fields.forEach(field => {
+                        field.value = '';
+                    });
+                    
+                    // Clear state
+                    currentState = {};
+                    
+                    // Update result label
+                    document.getElementById('result-label').textContent = 'Output:';
+                }
+                
+                // Process button handlers
+                function processEncrypt() {
+                    const inputText = document.getElementById('input-text').value;
+                    const inputKey = document.getElementById('input-key').value;
+                    
+                    if (!inputText || !inputKey) {
+                        alert('Please enter both plaintext and key');
+                        return;
+                    }
+                    
+                    // Convert inputs to binary
+                    const binaryText = convertToBinary(inputText, 64);
+                    const binaryKey = convertToBinary(inputKey, 64);
+                    
+                    // Store initial values
+                    updateState('initial-input', binaryText);
+                    updateState('key-initial', binaryKey);
+                    
+                    // Perform encryption
+                    const result = encrypt(binaryText, binaryKey);
+                    
+                    // Update result with proper formatting
+                    document.getElementById('result-label').textContent = 'Ciphertext:';
+                    updateOutputFormat();
+                }
+                
+                function processDecrypt() {
+                    const inputText = document.getElementById('input-text').value;
+                    const inputKey = document.getElementById('input-key').value;
+                    
+                    if (!inputText || !inputKey) {
+                        alert('Please enter both ciphertext and key');
+                        return;
+                    }
+                    
+                    // Convert inputs to binary
+                    const binaryText = convertToBinary(inputText, 64);
+                    const binaryKey = convertToBinary(inputKey, 64);
+                    
+                    // Store initial values
+                    updateState('initial-input', binaryText);
+                    updateState('key-initial', binaryKey);
+                    
+                    // Perform decryption
+                    const result = decrypt(binaryText, binaryKey);
+                    
+                    // Update result with proper formatting
+                    document.getElementById('result-label').textContent = 'Plaintext:';
+                    updateOutputFormat();
+                }
+                
+                // Initialize the tool when the DOM is loaded
+                document.addEventListener('DOMContentLoaded', function() {
+                    // Set up event listeners
+                    document.getElementById('encrypt-btn').addEventListener('click', processEncrypt);
+                    document.getElementById('decrypt-btn').addEventListener('click', processDecrypt);
+                    document.getElementById('reset-btn').addEventListener('click', resetAll);
+                    document.getElementById('output-format').addEventListener('change', updateOutputFormat);
+                    
+                    // Highlight related fields on focus
+                    document.querySelectorAll('input').forEach(input => {
+                        input.addEventListener('focus', function() {
+                            // Implementation for field highlighting could be added here
+                        });
+                    });
+                });
+                </script>
+    </body>
+    </html>

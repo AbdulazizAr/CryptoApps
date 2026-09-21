@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8">
+  <title>Caesar Cipher Tool</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; max-width: 700px; margin: auto; }
+    textarea, input, select { width: 100%; padding: 10px; margin: 10px 0; }
+    .label { font-weight: bold; margin-top: 20px; }
+    .output { white-space: pre-wrap; background: #f9f9f9; padding: 10px; border-radius: 5px; }
+    .warn { color: red; font-weight: bold; }
+  </style>
+</head>
+<body>
+<nav style="margin: 0 0 20px; font: 14px system-ui"><a href="../index.html">← All CryptoApps</a> · Educational use only</nav>
+  <h2>🔄 Caesar Cipher Tool</h2>
+
+  <div class="label">🔤 Custom Alphabet (index starts at 0):</div>
+  <input type="text" id="caesarAlphabet" placeholder="Enter your alphabet here (e.g., ABCDEFGHIJKLMNOPQRSTUVWXYZ)">
+
+  <div class="label">📝 Plaintext:</div>
+  <textarea id="plainText" rows="3" placeholder="Enter your plaintext"></textarea>
+
+  <div class="label">🔐 Ciphertext:</div>
+  <textarea id="cipherText" rows="3" placeholder="Enter your ciphertext (if known)"></textarea>
+
+  <div class="label">🔢 Shift (leave empty to auto-detect):</div>
+  <input type="number" id="shiftAmount" placeholder="Enter Caesar shift (e.g., 3)">
+
+  <button onclick="encryptCaesar()">🔒 Encrypt</button>
+  <button onclick="decryptCaesar()">🔓 Decrypt</button>
+  <button onclick="detectShift()">🔍 Detect Shift from Plain + Cipher</button>
+
+  <div class="label">📄 Output:</div>
+  <div class="output" id="caesarOutput"></div>
+
+  <script>
+    const alphaField = document.getElementById('caesarAlphabet');
+    const plainField = document.getElementById('plainText');
+    const cipherField = document.getElementById('cipherText');
+    const shiftField = document.getElementById('shiftAmount');
+    const output = document.getElementById('caesarOutput');
+
+    // Auto load saved fields
+    window.onload = () => {
+      alphaField.value = localStorage.getItem('caesarAlphabet') || 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      plainField.value = localStorage.getItem('plainText') || '';
+      cipherField.value = localStorage.getItem('cipherText') || '';
+      shiftField.value = localStorage.getItem('shiftAmount') || '';
+    };
+
+    [alphaField, plainField, cipherField, shiftField].forEach(f => {
+      f.addEventListener('input', () => localStorage.setItem(f.id, f.value));
+    });
+
+    function encryptCaesar() {
+      const alphabet = alphaField.value;
+      const shift = Number(shiftField.value);
+      const text = plainField.value;
+      if (alphabet.length < 2 || new Set(alphabet).size !== alphabet.length || !shiftField.value.trim() || !Number.isSafeInteger(shift)) return output.textContent = '❌ Use a unique alphabet and a whole number shift.';
+      const encrypted = [...text].map(c => {
+        const i = alphabet.indexOf(c);
+        return i !== -1 ? alphabet[((i + shift) % alphabet.length + alphabet.length) % alphabet.length] : c;
+      }).join('');
+      output.textContent = `Encrypted: ${encrypted}`;
+      cipherField.value = encrypted;
+    }
+
+    function decryptCaesar() {
+      const alphabet = alphaField.value;
+      const shift = Number(shiftField.value);
+      const text = cipherField.value;
+      if (alphabet.length < 2 || new Set(alphabet).size !== alphabet.length || !shiftField.value.trim() || !Number.isSafeInteger(shift)) return output.textContent = '❌ Use a unique alphabet and a whole number shift.';
+      const decrypted = [...text].map(c => {
+        const i = alphabet.indexOf(c);
+        return i !== -1 ? alphabet[((i - shift) % alphabet.length + alphabet.length) % alphabet.length] : c;
+      }).join('');
+      output.textContent = `Decrypted: ${decrypted}`;
+      plainField.value = decrypted;
+    }
+
+    function detectShift() {
+      const alphabet = alphaField.value;
+      const pt = plainField.value;
+      const ct = cipherField.value;
+
+      if (!pt || !ct || pt.length !== ct.length) {
+        return output.textContent = '❌ Plaintext and ciphertext must be of equal length.';
+      }
+
+      let missingChars = new Set();
+      for (let ch of pt + ct) {
+        if (!alphabet.includes(ch)) missingChars.add(ch);
+      }
+      if (missingChars.size > 0) {
+        return output.textContent = `❌ Characters not in the custom alphabet: ${[...missingChars].join(', ')}`;
+      }
+
+      for (let s = 0; s < alphabet.length; s++) {
+        let match = true;
+        for (let i = 0; i < pt.length; i++) {
+          const pi = alphabet.indexOf(pt[i]);
+          const ci = alphabet.indexOf(ct[i]);
+          if (pi === -1 || ci === -1 || ((pi + s) % alphabet.length) !== ci) {
+            match = false; break;
+          }
+        }
+        if (match) {
+          shiftField.value = s;
+          return output.textContent = `✅ Detected Caesar Shift: ${s}`;
+        }
+      }
+      output.textContent = '❌ No valid Caesar shift detected.';
+    }
+  </script>
+</body>
+</html>

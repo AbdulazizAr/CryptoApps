@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8">
+  <title>One-Time Pad Cipher</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; max-width: 700px; margin: auto; }
+    input, textarea { width: 100%; padding: 10px; margin: 10px 0; }
+    .label { font-weight: bold; margin-top: 20px; }
+    .output { white-space: pre-wrap; background: #f5f5f5; padding: 10px; border-radius: 5px; }
+  </style>
+</head>
+<body>
+<nav style="margin: 0 0 20px; font: 14px system-ui"><a href="../index.html">← All CryptoApps</a> · Educational use only</nav>
+  <h2>🎯 One-Time Pad Cipher Tool</h2>
+
+  <div class="label">🔤 Custom Alphabet:</div>
+  <input type="text" id="otpAlphabet" value="ABCDEFGHIJKLMNOPQRSTUVWXYZ" placeholder="Enter your custom alphabet">
+
+  <div class="label">📝 Plaintext:</div>
+  <textarea id="otpPlaintext" rows="3" placeholder="Enter plaintext"></textarea>
+
+  <div class="label">🔑 Key (must match length of plaintext):</div>
+  <textarea id="otpKey" rows="3" placeholder="Enter random key of equal length"></textarea>
+
+  <div class="label">🔒 Ciphertext:</div>
+  <textarea id="otpCiphertext" rows="3" placeholder="Enter ciphertext"></textarea>
+
+  <p id="cipherStatus" role="status" style="color:#a32626"></p>
+  <p>For this demonstration, supply your own key. A real one-time pad requires a uniformly random secret key that is never reused.</p>
+  <script>
+    const alphaField = document.getElementById('otpAlphabet');
+    const plainField = document.getElementById('otpPlaintext');
+    const keyField = document.getElementById('otpKey');
+    const cipherField = document.getElementById('otpCiphertext');
+    const statusField = document.getElementById('cipherStatus');
+    let direction = 'encrypt';
+    [alphaField, plainField, keyField, cipherField].forEach(field => field.addEventListener('input', syncOTP));
+    function syncOTP(event) {
+      if (event?.target === plainField) direction = 'encrypt';
+      if (event?.target === cipherField) direction = 'decrypt';
+      const source = direction === 'encrypt' ? plainField : cipherField;
+      const target = direction === 'encrypt' ? cipherField : plainField;
+      const alphabet = alphaField.value, text = source.value, key = keyField.value;
+      target.value = '';
+      statusField.textContent = '';
+      if (alphabet.length < 2 || new Set(alphabet).size !== alphabet.length || /[\uD800-\uDFFF]/.test(alphabet)) {
+        statusField.textContent = 'Use an alphabet of at least two unique BMP characters.'; return;
+      }
+      if (!text || !key) { statusField.textContent = 'Enter a message and key.'; return; }
+      if ([...text + key].some(c => !alphabet.includes(c))) {
+        statusField.textContent = 'Every message and key character must appear in the alphabet. Use uppercase letters with the default alphabet.'; return;
+      }
+      if (key.length !== text.length) { statusField.textContent = 'The key must have exactly the same length as the message.'; return; }
+      const sign = direction === 'encrypt' ? 1 : -1;
+      target.value = [...text].map((c,i) => {
+        const value = alphabet.indexOf(c) + sign * alphabet.indexOf(key[i % key.length]);
+        return alphabet[(value % alphabet.length + alphabet.length) % alphabet.length];
+      }).join('');
+    }
+</script>
+</body>
+</html>

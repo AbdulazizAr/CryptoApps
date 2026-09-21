@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AES-128 | CryptoApps</title><link rel="stylesheet" href="css/style.css">
+<style>.trace{overflow:auto}.trace table{width:100%;border-collapse:collapse;text-align:left}.trace th,.trace td{padding:12px;border-bottom:1px solid #ddd}.trace code{white-space:nowrap}input{font-family:monospace}.notice{margin:16px 0}label{display:block;font-weight:600}#result{display:block;overflow-wrap:anywhere;font-family:monospace;font-size:1.2rem}#error{color:#a32626}.actions{display:flex;gap:12px;flex-wrap:wrap}</style></head>
+<body><main class="container"><nav><a href="../index.html">← All CryptoApps</a> · Educational use only</nav>
+<header class="header"><h1>AES-128 block explorer</h1><p>Encrypt or decrypt one 128-bit block and inspect every round.</p></header>
+<p class="notice">Enter exactly 16 bytes as hexadecimal (32 digits). An optional 0x prefix and spaces are accepted. There is no padding, block mode, or authentication.</p>
+<form id="aes-form"><label for="block">Input block</label><input class="input-field" id="block" value="00112233445566778899aabbccddeeff" spellcheck="false" autocomplete="off">
+<label for="key">128-bit key</label><input class="input-field" id="key" value="000102030405060708090a0b0c0d0e0f" spellcheck="false" autocomplete="off">
+<div class="actions"><button class="btn" type="submit">Encrypt</button><button class="btn" type="button" id="decrypt">Decrypt</button><button class="btn" type="button" id="use-result">Use result as input</button><button class="btn" type="reset">Reset</button></div></form>
+<p id="error" role="alert"></p><section class="operation-display" aria-live="polite"><h2 id="result-title">Result</h2><output id="result">Run an operation to see its result.</output></section>
+<section class="trace"><h2>Round trace</h2><p>Each byte string follows AES column-major state order. Encryption runs from round 0 to 10; decryption runs from round 10 to 0.</p><table><thead><tr><th scope="col">Round</th><th scope="col">Operation</th><th scope="col">State / round key (hex)</th></tr></thead><tbody id="trace"></tbody></table></section>
+</main><script type="module" src="js/main.js"></script></body></html>

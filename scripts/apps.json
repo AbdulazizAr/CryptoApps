@@ -1,0 +1,15 @@
+[
+  "aes",
+  "aes-key",
+  "aes-operations",
+  "des",
+  "des-operations",
+  "s-des",
+  "caesar",
+  "substitution",
+  "vigenere",
+  "one-time-pad",
+  "hill",
+  "md5",
+  "sha1"
+]

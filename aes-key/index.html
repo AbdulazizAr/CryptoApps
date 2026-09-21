@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AES Key Expansion Visualizer</title>
+    <style>
+        /* AES Key Expansion Visualizer CSS */
+:root {
+    --primary-color: #3498db;
+    --bg-color: #f8f9fa;
+    --border-color: #ddd;
+    --text-color: #333;
+    --error-color: #e74c3c;
+    --success-color: #2ecc71;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #2c3e50;
+}
+
+h2 {
+    margin: 20px 0 15px;
+    padding-bottom: 5px;
+    border-bottom: 2px solid var(--border-color);
+}
+
+h3 {
+    margin-bottom: 10px;
+    color: #34495e;
+}
+
+.section {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    border-top: 5px solid var(--primary-color);
+}
+
+.input-group {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.button-group {
+    margin-bottom: 20px;
+}
+
+button {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s;
+}
+
+button:hover {
+    background-color: #2980b9;
+}
+
+.copy-btn {
+    background-color: #7f8c8d;
+    margin-top: 10px;
+    white-space: nowrap;
+}
+
+.copy-btn:hover {
+    background-color: #6d7b7c;
+}
+
+.matrix-container {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.matrix-label {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.matrix {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(4, 1fr);
+    gap: 2px;
+    width: 150px;
+    height: 150px;
+    margin: 0 auto;
+}
+
+.matrix-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #ecf0f1;
+    border: 1px solid #bdc3c7;
+    font-family: monospace;
+    font-size: 14px;
+}
+
+.word-labels {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    width: 150px;
+    margin: 5px auto 0;
+}
+
+.word-label {
+    text-align: center;
+    font-weight: bold;
+    font-size: 12px;
+    color: #34495e;
+}
+
+.error {
+    color: var(--error-color);
+    margin-top: 5px;
+    font-size: 14px;
+}
+
+.expanded-keys-container {
+    display: grid;
+    gap: 20px;
+}
+
+.expanded-key-section {
+    background: #f9f9f9;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+.expanded-key-row {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    justify-content: center;
+}
+
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: var(--success-color);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 4px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    transform: translateY(-100px);
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.notification.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.input-counter {
+    font-size: 12px;
+    color: #666;
+    margin-top: 4px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    .expanded-key-row {
+        flex-direction: column;
+    }
+    
+    .copy-btn {
+        width: 100%;
+    }
+}
+    </style>
+</head>
+<body>
+<nav style="margin: 0 0 20px; font: 14px system-ui"><a href="../index.html">← All CryptoApps</a> · Educational use only</nav>
+    <h1>AES Key Expansion Visualizer</h1>
+    
+    <div class="section">
+        <h2>Input Key</h2>
+        <div class="input-group">
+            <label for="keyInput">Enter Key (128-bit):</label>
+            <input type="text" id="keyInput" placeholder="e.g., 0x2b7e151628aed2a6abf7158809cf4f3c or 0b1010...">
+            <div id="keyInputError" class="error"></div>
+        </div>
+        <div class="button-group">
+            <button id="expandKeyBtn">Expand Key</button>
+        </div>
+        
+        <div class="matrix-container">
+            <div class="matrix-label">Input Key Matrix</div>
+            <div id="inputKeyMatrix" class="matrix"></div>
+            <div class="word-labels">
+                <div class="word-label">W<sub>0</sub></div>
+                <div class="word-label">W<sub>1</sub></div>
+                <div class="word-label">W<sub>2</sub></div>
+                <div class="word-label">W<sub>3</sub></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h2>Expanded Key Matrices</h2>
+        <div id="expandedKeysContainer" class="expanded-keys-container">
+            <!-- Round 1 -->
+            <div class="expanded-key-section">
+                <h3>Round 1 Key</h3>
+                <div class="expanded-key-row">
+                    <div class="matrix-container">
+                        <div id="expandedKey0" class="matrix"></div>
+                        <div class="word-labels">
+                            <div class="word-label">W<sub>4</sub></div>
+                            <div class="word-label">W<sub>5</sub></div>
+                            <div class="word-label">W<sub>6</sub></div>
+                            <div class="word-label">W<sub>7</sub></div>
+                        </div>
+                    </div>
+                    <button id="copyKey0Btn" class="copy-btn">Copy Round 1 Key</button>
+                </div>
+            </div>
+            
+            <!-- Round 2 -->
+            <div class="expanded-key-section">
+                <h3>Round 2 Key</h3>
+                <div class="expanded-key-row">
+                    <div class="matrix-container">
+                        <div id="expandedKey1" class="matrix"></div>
+                        <div class="word-labels">
+                            <div class="word-label">W<sub>8</sub></div>
+                            <div class="word-label">W<sub>9</sub></div>
+                            <div class="word-label">W<sub>10</sub></div>
+                            <div class="word-label">W<sub>11</sub></div>
+                        </div>
+                    </div>
+                    <button id="copyKey1Btn" class="copy-btn">Copy Round 2 Key</button>
+                </div>
+            </div>
+            
+            <!-- Round 3 -->
+            <div class="expanded-key-section">
+                <h3>Round 3 Key</h3>
+                <div class="expanded-key-row">
+                    <div class="matrix-container">
+                        <div id="expandedKey2" class="matrix"></div>
+                        <div class="word-labels">
+                            <div class="word-label">W<sub>12</sub></div>
+                            <div class="word-label">W<sub>13</sub></div>
+                            <div class="word-label">W<sub>14</sub></div>
+                            <div class="word-label">W<sub>15</sub></div>
+                        </div>
+                    </div>
+                    <button id="copyKey2Btn" class="copy-btn">Copy Round 3 Key</button>
+                </div>
+            </div>
+            
+            <!-- Round 4 -->
+            <div class="expanded-key-section">
+                <h3>Round 4 Key</h3>
+                <div class="expanded-key-row">
+                    <div class="matrix-container">
+                        <div id="expandedKey3" class="matrix"></div>
+                        <div class="word-labels">
+                            <div class="word-label">W<sub>16</sub></div>
+                            <div class="word-label">W<sub>17</sub></div>
+                            <div class="word-label">W<sub>18</sub></div>
+                            <div class="word-label">W<sub>19</sub></div>
+                        </div>
+                    </div>
+                    <button id="copyKey3Btn" class="copy-btn">Copy Round 4 Key</button>
+                </div>
+            </div>
+            
+            <!-- Round 5 -->
+            <div class="expanded-key-section">
+                <h3>Round 5 Key</h3>
+                <div class="expanded-key-row">
+                    <div class="matrix-container">
+                        <div id="expandedKey4" class="matrix"></div>
+                        <div class="word-labels">
+                            <div class="word-label">W<sub>20</sub></div>
+                            <div class="word-label">W<sub>21</sub></div>
+                            <div class="word-label">W<sub>22</sub></div>
+                            <div class="word-label">W<sub>23</sub></div>
+                        </div>
+                    </div>
+                    <button id="copyKey4Btn" class="copy-btn">Copy Round 5 Key</button>
+                </div>
+            </div>
+            
+            <!-- Round 6 -->
+            <div class="expanded-key-section">
+                <h3>Round 6 Key</h3>
+                <div class="expanded-key-row">
+                    <div class="matrix-container">
+                        <div id="expandedKey5" class="matrix"></div>
+                        <div class="word-labels">
+                            <div class="word-label">W<sub>24</sub></div>
+                            <div class="word-label">W<sub>25</sub></div>
+                            <div class="word-label">W<sub>26</sub></div>
+                            <div class="word-label">W<sub>27</sub></div>
+                        </div>
+                    </div>
+                    <button id="copyKey5Btn" class="copy-btn">Copy Round 6 Key</button>
+                </div>
+            </div>
+            
+            <!-- Round 7 -->
+            <div class="expanded-key-section">
+                <h3>Round 7 Key</h3>
+                <div class="expanded-key-row">
+                    <div class="matrix-container">
+                        <div id="expandedKey6" class="matrix"></div>
+                        <div class="word-labels">
+                            <div class="word-label">W<sub>28</sub></div>
+                            <div class="word-label">W<sub>29</sub></div>
+                            <div class="word-label">W<sub>30</sub></div>
+                            <div class="word-label">W<sub>31</sub></div>
+                        </div>
+                    </div>
+                    <button id="copyKey6Btn" class="copy-btn">Copy Round 7 Key</button>
+                </div>
+            </div>
+            
+            <!-- Round 8 -->
+            <div class="expanded-key-section">
+                <h3>Round 8 Key</h3>
+                <div class="expanded-key-row">
+                    <div class="matrix-container">
+                        <div id="expandedKey7" class="matrix"></div>
+                        <div class="word-labels">
+                            <div class="word-label">W<sub>32</sub></div>
+                            <div class="word-label">W<sub>33</sub></div>
+                            <div class="word-label">W<sub>34</sub></div>
+                            <div class="word-label">W<sub>35</sub></div>
+                        </div>
+                    </div>
+                    <button id="copyKey7Btn" class="copy-btn">Copy Round 8 Key</button>
+                </div>
+            </div>
+            
+            <!-- Round 9 -->
+            <div class="expanded-key-section">
+                <h3>Round 9 Key</h3>
+                <div class="expanded-key-row">
+                    <div class="matrix-container">
+                        <div id="expandedKey8" class="matrix"></div>
+                        <div class="word-labels">
+                            <div class="word-label">W<sub>36</sub></div>
+                            <div class="word-label">W<sub>37</sub></div>
+                            <div class="word-label">W<sub>38</sub></div>
+                            <div class="word-label">W<sub>39</sub></div>
+                        </div>
+                    </div>
+                    <button id="copyKey8Btn" class="copy-btn">Copy Round 9 Key</button>
+                </div>
+            </div>
+            
+            <!-- Round 10 -->
+            <div class="expanded-key-section">
+                <h3>Round 10 Key</h3>
+                <div class="expanded-key-row">
+                    <div class="matrix-container">
+                        <div id="expandedKey9" class="matrix"></div>
+                        <div class="word-labels">
+                            <div class="word-label">W<sub>40</sub></div>
+                            <div class="word-label">W<sub>41</sub></div>
+                            <div class="word-label">W<sub>42</sub></div>
+                            <div class="word-label">W<sub>43</sub></div>
+                        </div>
+                    </div>
+                    <button id="copyKey9Btn" class="copy-btn">Copy Round 10 Key</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="notification" class="notification">Copied to clipboard!</div>
+    
+    <script>
+        // AES Key Expansion Visualizer JavaScript
+
+// Constants
+const AES_SBOX = [
+    0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76,
+    0xca, 0x82, 0xc9, 0x7d, 0xfa, 0x59, 0x47, 0xf0, 0xad, 0xd4, 0xa2, 0xaf, 0x9c, 0xa4, 0x72, 0xc0,
+    0xb7, 0xfd, 0x93, 0x26, 0x36, 0x3f, 0xf7, 0xcc, 0x34, 0xa5, 0xe5, 0xf1, 0x71, 0xd8, 0x31, 0x15,
+    0x04, 0xc7, 0x23, 0xc3, 0x18, 0x96, 0x05, 0x9a, 0x07, 0x12, 0x80, 0xe2, 0xeb, 0x27, 0xb2, 0x75,
+    0x09, 0x83, 0x2c, 0x1a, 0x1b, 0x6e, 0x5a, 0xa0, 0x52, 0x3b, 0xd6, 0xb3, 0x29, 0xe3, 0x2f, 0x84,
+    0x53, 0xd1, 0x00, 0xed, 0x20, 0xfc, 0xb1, 0x5b, 0x6a, 0xcb, 0xbe, 0x39, 0x4a, 0x4c, 0x58, 0xcf,
+    0xd0, 0xef, 0xaa, 0xfb, 0x43, 0x4d, 0x33, 0x85, 0x45, 0xf9, 0x02, 0x7f, 0x50, 0x3c, 0x9f, 0xa8,
+    0x51, 0xa3, 0x40, 0x8f, 0x92, 0x9d, 0x38, 0xf5, 0xbc, 0xb6, 0xda, 0x21, 0x10, 0xff, 0xf3, 0xd2,
+    0xcd, 0x0c, 0x13, 0xec, 0x5f, 0x97, 0x44, 0x17, 0xc4, 0xa7, 0x7e, 0x3d, 0x64, 0x5d, 0x19, 0x73,
+    0x60, 0x81, 0x4f, 0xdc, 0x22, 0x2a, 0x90, 0x88, 0x46, 0xee, 0xb8, 0x14, 0xde, 0x5e, 0x0b, 0xdb,
+    0xe0, 0x32, 0x3a, 0x0a, 0x49, 0x06, 0x24, 0x5c, 0xc2, 0xd3, 0xac, 0x62, 0x91, 0x95, 0xe4, 0x79,
+    0xe7, 0xc8, 0x37, 0x6d, 0x8d, 0xd5, 0x4e, 0xa9, 0x6c, 0x56, 0xf4, 0xea, 0x65, 0x7a, 0xae, 0x08,
+    0xba, 0x78, 0x25, 0x2e, 0x1c, 0xa6, 0xb4, 0xc6, 0xe8, 0xdd, 0x74, 0x1f, 0x4b, 0xbd, 0x8b, 0x8a,
+    0x70, 0x3e, 0xb5, 0x66, 0x48, 0x03, 0xf6, 0x0e, 0x61, 0x35, 0x57, 0xb9, 0x86, 0xc1, 0x1d, 0x9e,
+    0xe1, 0xf8, 0x98, 0x11, 0x69, 0xd9, 0x8e, 0x94, 0x9b, 0x1e, 0x87, 0xe9, 0xce, 0x55, 0x28, 0xdf,
+    0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68, 0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16
+];
+
+const RCON = [0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1B, 0x36];
+
+// Global variables
+let expandedKeySchedule = [];
+
+// ------------- UTILITY FUNCTIONS -------------
+
+// Create a 4x4 matrix filled with zeros
+function createEmptyMatrix() {
+    return [
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0]
+    ];
+}
+
+// Parse input string (hex or binary) to a byte array
+function parseInput(input) {
+    if (!input || input.trim() === '') {
+        throw new Error('Input cannot be empty');
+    }
+    
+    let bytes = [];
+    let actualBits = 0;
+    input = input.trim();
+    
+    // Handle hex input (0x...)
+    if (input.toLowerCase().startsWith('0x')) {
+        let hexString = input.substring(2).replace(/\s/g, '');
+        if (!/^[0-9a-fA-F]+$/.test(hexString)) {
+            throw new Error('Invalid hex format');
+        }
+        
+        // Calculate actual bits from hex input
+        actualBits = hexString.length * 4;
+        
+        // For key expansion, we need exactly 32 hex characters (16 bytes)
+        if (hexString.length !== 32) {
+            throw new Error('Key must be exactly 128 bits (32 hex characters)');
+        }
+        
+        // Convert pairs of hex digits to bytes
+        for (let i = 0; i < hexString.length; i += 2) {
+            bytes.push(parseInt(hexString.substring(i, i + 2), 16));
+        }
+    }
+    // Handle binary input (0b...)
+    else if (input.toLowerCase().startsWith('0b')) {
+        let binString = input.substring(2).replace(/\s/g, '');
+        if (!/^[01]+$/.test(binString)) {
+            throw new Error('Invalid binary format');
+        }
+        
+        // Calculate actual bits from binary input
+        actualBits = binString.length;
+        
+        // For key expansion, we need exactly 128 bits
+        if (binString.length !== 128) {
+            throw new Error('Key must be exactly 128 bits');
+        }
+        
+        // Convert 8 bits at a time to bytes
+        for (let i = 0; i < binString.length; i += 8) {
+            bytes.push(parseInt(binString.substring(i, i + 8), 2));
+        }
+    }
+    else {
+        throw new Error('Input must start with 0x (hex) or 0b (binary)');
+    }
+    
+    // Store the actual bit count and byte count for display
+    const actualBytes = bytes.length;
+    
+    // Return both the bytes and stats
+    return {
+        bytes: bytes,
+        stats: {
+            bits: actualBits,
+            bytes: actualBytes
+        }
+    };
+}
+
+// Convert byte array to a 4x4 matrix (column-major order as per AES)
+function bytesToMatrix(bytes) {
+    const matrix = createEmptyMatrix();
+    
+    for (let col = 0; col < 4; col++) {
+        for (let row = 0; row < 4; row++) {
+            matrix[row][col] = bytes[col * 4 + row];
+        }
+    }
+    
+    return matrix;
+}
+
+// Convert 4x4 matrix back to byte array (column-major order)
+function matrixToBytes(matrix) {
+    const bytes = new Array(16);
+    
+    for (let col = 0; col < 4; col++) {
+        for (let row = 0; row < 4; row++) {
+            bytes[col * 4 + row] = matrix[row][col];
+        }
+    }
+    
+    return bytes;
+}
+
+// Render a matrix to the specified container
+function renderMatrix(containerId, matrix) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    for (let row = 0; row < 4; row++) {
+        for (let col = 0; col < 4; col++) {
+            const cell = document.createElement('div');
+            cell.className = 'matrix-cell';
+            cell.textContent = matrix[row][col].toString(16).padStart(2, '0').toUpperCase();
+            container.appendChild(cell);
+        }
+    }
+}
+
+// Convert matrix to hex string for display/copy
+function matrixToHexString(matrix) {
+    const bytes = matrixToBytes(matrix);
+    return '0x' + bytes.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// Show notification message
+function showNotification(message) {
+    const notification = document.getElementById('notification');
+    notification.textContent = message;
+    notification.classList.add('show');
+    
+    setTimeout(() => {
+        notification.classList.remove('show');
+    }, 2000);
+}
+
+// Copy text to clipboard
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text)
+        .then(() => showNotification('Copied to clipboard!'))
+        .catch(() => showNotification('Failed to copy. Try again.'));
+}
+
+// ------------- KEY EXPANSION FUNCTIONS -------------
+
+// Perform key expansion for AES-128
+function keyExpansion(key) {
+    const Nk = 4;  // Number of 32-bit words in the key
+    const Nb = 4;  // Number of columns in the state
+    const Nr = 10; // Number of rounds
+    
+    // Initialize array to store expanded key
+    let w = new Array(Nb * (Nr + 1));
+    
+    // First Nk words are the key itself
+    for (let i = 0; i < Nk; i++) {
+        w[i] = [key[4*i], key[4*i+1], key[4*i+2], key[4*i+3]];
+    }
+    
+    // Generate remaining words
+    for (let i = Nk; i < Nb * (Nr + 1); i++) {
+        let temp = w[i-1].slice(); // Copy the previous word
+        
+        if (i % Nk === 0) {
+            // RotWord and SubWord operations
+            temp = rotWord(temp);
+            temp = subWord(temp);
+            
+            // XOR with round constant
+            temp[0] ^= RCON[(i / Nk) - 1];
+        }
+        
+        // XOR with word Nk positions back
+        w[i] = xorWords(w[i-Nk], temp);
+    }
+    
+    return w;
+}
+
+// Rotate the word left by one byte
+function rotWord(word) {
+    return [word[1], word[2], word[3], word[0]];
+}
+
+// Substitute word using S-Box
+function subWord(word) {
+    return word.map(byte => AES_SBOX[byte]);
+}
+
+// XOR two words
+function xorWords(word1, word2) {
+    return [
+        word1[0] ^ word2[0],
+        word1[1] ^ word2[1],
+        word1[2] ^ word2[2],
+        word1[3] ^ word2[3]
+    ];
+}
+
+// Convert words to matrices for display
+function wordsToMatrices(words) {
+    const matrices = [];
+    
+    // Convert words to matrices for each round (4 words = 1 matrix)
+    for (let i = 0; i < 10; i++) {
+        const matrix = createEmptyMatrix();
+        
+        // Each matrix is built from 4 consecutive words (columns)
+        for (let j = 0; j < 4; j++) {
+            const wordIndex = (i + 1) * 4 + j; // Skip the first 4 words (original key)
+            const word = words[wordIndex];
+            
+            // Copy the word values into the matrix column
+            for (let k = 0; k < 4; k++) {
+                matrix[k][j] = word[k];
+            }
+        }
+        
+        matrices.push(matrix);
+    }
+    
+    return matrices;
+}
+
+// ------------- EVENT HANDLERS -------------
+
+function handleExpandKey() {
+    const errorElement = document.getElementById('keyInputError');
+    errorElement.textContent = '';
+    
+    try {
+        const input = document.getElementById('keyInput').value;
+        const result = parseInput(input);
+        const keyMatrix = bytesToMatrix(result.bytes);
+        
+        // Display input key matrix
+        renderMatrix('inputKeyMatrix', keyMatrix);
+        
+        // Perform key expansion
+        const expandedWords = keyExpansion(result.bytes);
+        const expandedMatrices = wordsToMatrices(expandedWords);
+        
+        // Display all expanded key matrices
+        for (let i = 0; i < 10; i++) {
+            renderMatrix(`expandedKey${i}`, expandedMatrices[i]);
+            
+            // Store the matrix data for copy operation
+            document.getElementById(`copyKey${i}Btn`).setAttribute(
+                'data-result', 
+                matrixToHexString(expandedMatrices[i])
+            );
+        }
+        
+        // Update the input counter
+        updateInputCounter('keyInput', result.stats);
+        
+    } catch (error) {
+        errorElement.textContent = error.message;
+    }
+}
+
+// Set up all event listeners
+function setupEventListeners() {
+    // Expand key button click
+    document.getElementById('expandKeyBtn').addEventListener('click', handleExpandKey);
+    
+    // Set up copy buttons for each round key
+    for (let i = 0; i < 10; i++) {
+        document.getElementById(`copyKey${i}Btn`).addEventListener('click', function() {
+            const result = this.getAttribute('data-result') || '0x00000000000000000000000000000000';
+            copyToClipboard(result);
+        });
+    }
+    
+    // Add input counter functionality
+    const keyInput = document.getElementById('keyInput');
+    
+    // Create counter element
+    const counterElement = document.createElement('div');
+    counterElement.id = 'keyInputCounter';
+    counterElement.className = 'input-counter';
+    counterElement.textContent = 'Size: 0 bits (0 bytes)';
+    
+    // Insert after the input field
+    keyInput.parentNode.insertBefore(counterElement, keyInput.nextSibling);
+    
+    // Update counter on input
+    keyInput.addEventListener('input', function() {
+        updateCounterForInput();
+    });
+}
+
+// Update counter for the input field
+function updateCounterForInput() {
+    const input = document.getElementById('keyInput').value;
+    const counterElement = document.getElementById('keyInputCounter');
+    
+    try {
+        if (!input || input.trim() === '') {
+            counterElement.textContent = 'Size: 0 bits (0 bytes)';
+            return;
+        }
+        
+        // Calculate bits/bytes based on input format
+        let bits = 0;
+        let bytes = 0;
+        
+        if (input.toLowerCase().startsWith('0x')) {
+            const hexString = input.substring(2).replace(/\s/g, '');
+            if (/^[0-9a-fA-F]+$/.test(hexString)) {
+                bits = hexString.length * 4;
+                bytes = Math.ceil(bits / 8);
+            }
+        } else if (input.toLowerCase().startsWith('0b')) {
+            const binString = input.substring(2).replace(/\s/g, '');
+            if (/^[01]+$/.test(binString)) {
+                bits = binString.length;
+                bytes = Math.ceil(bits / 8);
+            }
+        }
+        
+        counterElement.textContent = `Size: ${bits} bits (${bytes} bytes)`;
+    } catch (e) {
+        counterElement.textContent = 'Size: Invalid input';
+    }
+}
+
+// Update counter with parsed input data
+function updateInputCounter(inputId, stats) {
+    const counterElement = document.getElementById(inputId + 'Counter');
+    if (!counterElement) return;
+    
+    counterElement.textContent = `Size: ${stats.bits} bits (${stats.bytes} bytes)`;
+}
+
+// Initialize empty matrices
+function initializeMatrices() {
+    const emptyMatrix = createEmptyMatrix();
+    
+    // Render empty input matrix
+    renderMatrix('inputKeyMatrix', emptyMatrix);
+    
+    // Render empty expanded key matrices
+    for (let i = 0; i < 10; i++) {
+        renderMatrix(`expandedKey${i}`, emptyMatrix);
+    }
+}
+
+// Initialize the application when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    initializeMatrices();
+    setupEventListeners();
+});
+    </script>
+</body>
+</html>

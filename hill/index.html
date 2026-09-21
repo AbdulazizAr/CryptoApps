@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8">
+  <title>Hill Cipher Tool</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; max-width: 800px; margin: auto; }
+    input, textarea { padding: 10px; margin: 10px 0; width: 100%; }
+    .matrix-row { display: flex; gap: 10px; margin-bottom: 5px; }
+    .matrix-row input { width: 50px; text-align: center; }
+    .label { font-weight: bold; margin-top: 20px; }
+    .output { white-space: pre-wrap; background: #f5f5f5; padding: 10px; border-radius: 5px; }
+  </style>
+</head>
+<body>
+<nav style="margin: 0 0 20px; font: 14px system-ui"><a href="../index.html">← All CryptoApps</a> · Educational use only</nav>
+  <h2>🔳 Hill Cipher Tool (3x3 Matrix)</h2>
+
+  <div class="label">🔤 Custom Alphabet:</div>
+  <input type="text" id="hillAlphabet" value="ABCDEFGHIJKLMNOPQRSTUVWXYZ">
+
+  <div class="label">🔢 Enter 3x3 Key Matrix (numbers or a letter for variable):</div>
+  <div id="matrixInputs"></div>
+
+  <div class="label">🧮 Expected Determinant Value (optional):</div>
+  <input type="number" id="expectedDet" placeholder="e.g., 1 or any known det mod value">
+
+  <div class="label">📝 Input Text (plaintext or ciphertext):</div>
+  <textarea id="hillPlaintext" rows="3" placeholder="Enter plaintext (in multiples of 3)"></textarea>
+
+  <button onclick="encryptHill()">🔒 Encrypt</button>
+  <button onclick="decryptHill()">🔓 Decrypt</button>
+  <button onclick="calculateInverse()">🧮 Show Determinant, GCD & Inverse Matrix</button>
+
+  <div class="label">📄 Output:</div>
+  <div class="output" id="hillOutput"></div>
+
+  <script>
+    const alphabetInput = document.getElementById('hillAlphabet');
+    const matrixContainer = document.getElementById('matrixInputs');
+    const expectedDetField = document.getElementById('expectedDet');
+    const plaintextInput = document.getElementById('hillPlaintext');
+    const output = document.getElementById('hillOutput');
+
+    let matrixFields = [];
+
+    function initMatrixInputs() {
+      matrixContainer.innerHTML = '';
+      matrixFields = [];
+      for (let r = 0; r < 3; r++) {
+        const row = document.createElement('div');
+        row.className = 'matrix-row';
+        for (let c = 0; c < 3; c++) {
+          const input = document.createElement('input');
+          input.type = 'text';
+          input.value = (r === c) ? '1' : '0';
+          row.appendChild(input);
+          matrixFields.push(input);
+        }
+        matrixContainer.appendChild(row);
+      }
+    }
+
+    function parseMatrixInput() {
+      return matrixFields.map(f => /^-?\d+$/.test(f.value.trim()) ? Number(f.value) : f.value.trim());
+    }
+
+    function substituteMatrixVariable(matrix, mod, expectedDet) {
+      const symbols = matrix.filter(v => typeof v === 'string');
+      if (symbols.length !== 1 || typeof expectedDet !== 'number') return null;
+      const variable = symbols[0];
+      for (let x = 0; x < mod; x++) {
+        const tempMatrix = matrix.map(v => (v === variable ? x : v));
+        const m = [tempMatrix.slice(0, 3), tempMatrix.slice(3, 6), tempMatrix.slice(6, 9)];
+        const det = matrixDeterminant(m) % mod;
+        if ((det + mod) % mod === ((expectedDet % mod) + mod) % mod) {
+          return tempMatrix.map(v => (v === variable ? x : v));
+        }
+      }
+      return null;
+    }
+
+    function getMatrixValues() {
+      const mod = alphabetInput.value.length;
+      let raw = parseMatrixInput();
+      if (typeof expectedDetField.value === 'string' && expectedDetField.value.trim() !== '') {
+        const expectedDet = Number(expectedDetField.value);
+        if (!isNaN(expectedDet)) {
+          raw = substituteMatrixVariable(raw, mod, expectedDet) || raw;
+        }
+      }
+      return [raw.slice(0, 3), raw.slice(3, 6), raw.slice(6, 9)].map(row => row.map(v => parseInt(v)));
+    }
+
+    function gcd(a, b) {
+      return b ? gcd(b, a % b) : Math.abs(a);
+    }
+
+    function modInverse(a, m) {
+      for (let i = 1; i < m; i++) if ((a * i) % m === 1) return i;
+      return null;
+    }
+
+    function matrixDeterminant(m) {
+      return (
+        m[0][0] * (m[1][1] * m[2][2] - m[1][2] * m[2][1]) -
+        m[0][1] * (m[1][0] * m[2][2] - m[1][2] * m[2][0]) +
+        m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0])
+      );
+    }
+
+    function matrixInverse(m, mod) {
+      const det = matrixDeterminant(m);
+      const detInv = modInverse((det % mod + mod) % mod, mod);
+      if (detInv === null) return null;
+
+      const adj = [
+        [ m[1][1]*m[2][2] - m[1][2]*m[2][1], m[0][2]*m[2][1] - m[0][1]*m[2][2], m[0][1]*m[1][2] - m[0][2]*m[1][1] ],
+        [ m[1][2]*m[2][0] - m[1][0]*m[2][2], m[0][0]*m[2][2] - m[0][2]*m[2][0], m[0][2]*m[1][0] - m[0][0]*m[1][2] ],
+        [ m[1][0]*m[2][1] - m[1][1]*m[2][0], m[0][1]*m[2][0] - m[0][0]*m[2][1], m[0][0]*m[1][1] - m[0][1]*m[1][0] ]
+      ];
+
+      return adj.map(row => row.map(val => ((val * detInv) % mod + mod) % mod));
+    }
+
+    function textToVector(text, alphabet) {
+      return [...text].map(c => alphabet.indexOf(c));
+    }
+
+    function vectorToText(vec, alphabet) {
+      return vec.map(v => alphabet[v]).join('');
+    }
+
+    function multiplyMatrixVector(m, vec, mod) {
+      let result = [];
+      for (let i = 0; i < 3; i++) {
+        let sum = 0;
+        for (let j = 0; j < 3; j++) {
+          sum += m[i][j] * vec[j];
+        }
+        result.push(((sum % mod) + mod) % mod);
+      }
+      return result;
+    }
+
+    function encryptHill() {
+      const alphabet = alphabetInput.value;
+      const mod = alphabet.length;
+      const matrix = getMatrixValues();
+      if (alphabet.length < 2 || new Set(alphabet).size !== alphabet.length || alphabet !== alphabet.toUpperCase() || /\s/.test(alphabet)) return output.textContent = '❌ Use a unique uppercase alphabet without whitespace.';
+      if (!matrix.flat().every(Number.isSafeInteger) || matrix.flat().some(v => Math.abs(v) > 1000)) return output.textContent = '❌ Enter integer matrix values from -1000 to 1000, or resolve one variable using the expected determinant.';
+
+      const text = plaintextInput.value.replace(/\s+/g, '').toUpperCase();
+      if ([...text].some(c => !alphabet.includes(c))) return output.textContent = '❌ Input contains characters outside the alphabet.';
+      if (text.length % 3 !== 0) return output.textContent = '❌ Text must be a multiple of 3.';
+
+      const vectors = [];
+      for (let i = 0; i < text.length; i += 3) {
+        vectors.push(textToVector(text.slice(i, i+3), alphabet));
+      }
+
+      let result = '';
+      for (let vec of vectors) {
+        const encVec = multiplyMatrixVector(matrix, vec, mod);
+        result += vectorToText(encVec, alphabet);
+      }
+      output.textContent = `Encrypted: ${result}`;
+    }
+
+    function decryptHill() {
+      const alphabet = alphabetInput.value;
+      const mod = alphabet.length;
+      const matrix = getMatrixValues();
+      if (alphabet.length < 2 || new Set(alphabet).size !== alphabet.length || alphabet !== alphabet.toUpperCase() || /\s/.test(alphabet)) return output.textContent = '❌ Use a unique uppercase alphabet without whitespace.';
+      if (!matrix.flat().every(Number.isSafeInteger) || matrix.flat().some(v => Math.abs(v) > 1000)) return output.textContent = '❌ Enter integer matrix values from -1000 to 1000, or resolve one variable using the expected determinant.';
+
+      const inverse = matrixInverse(matrix, mod);
+      if (!inverse) return output.textContent = '❌ Matrix is not invertible modulo ' + mod;
+
+      const text = plaintextInput.value.replace(/\s+/g, '').toUpperCase();
+      if ([...text].some(c => !alphabet.includes(c))) return output.textContent = '❌ Input contains characters outside the alphabet.';
+      if (text.length % 3 !== 0) return output.textContent = '❌ Text must be a multiple of 3.';
+
+      const vectors = [];
+      for (let i = 0; i < text.length; i += 3) {
+        vectors.push(textToVector(text.slice(i, i+3), alphabet));
+      }
+
+      let result = '';
+      for (let vec of vectors) {
+        const decVec = multiplyMatrixVector(inverse, vec, mod);
+        result += vectorToText(decVec, alphabet);
+      }
+      output.textContent = `Decrypted: ${result}`;
+    }
+
+    function calculateInverse() {
+      const alphabet = alphabetInput.value;
+      const mod = alphabet.length;
+      const matrix = getMatrixValues();
+      if (alphabet.length < 2 || new Set(alphabet).size !== alphabet.length || alphabet !== alphabet.toUpperCase() || /\s/.test(alphabet)) return output.textContent = '❌ Use a unique uppercase alphabet without whitespace.';
+      if (!matrix.flat().every(Number.isSafeInteger) || matrix.flat().some(v => Math.abs(v) > 1000)) return output.textContent = '❌ Enter integer matrix values from -1000 to 1000, or resolve one variable using the expected determinant.';
+
+      const det = matrixDeterminant(matrix);
+      const inv = matrixInverse(matrix, mod);
+      const gcdVal = gcd(det, mod);
+
+      let info = `Determinant: ${det} (mod ${mod})\nGCD(Det, ${mod}) = ${gcdVal}\n`;
+      if (!inv) {
+        info += '❌ Matrix is not invertible modulo ' + mod;
+      } else {
+        info += '✅ Inverse Matrix Exists:\n';
+        inv.forEach(row => info += row.join(' ') + '\n');
+      }
+      output.textContent = info;
+    }
+
+    initMatrixInputs();
+  </script>
+</body>
+</html>
